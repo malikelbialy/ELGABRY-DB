@@ -17,6 +17,8 @@
     --choc:#3b2415;
     --ink:#2b1810;
     --red:#c0392b;
+    --green-wa:#25d366;
+    --blue:#2c7be5;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'Tajawal','Cairo',sans-serif;background:#f5f0eb;color:var(--ink);min-height:100vh;}
@@ -39,7 +41,7 @@
   .login-box p.sub{text-align:center;color:#9c8a7a;font-size:13.5px;margin-bottom:26px;}
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:13.5px;font-weight:800;color:var(--choc);margin-bottom:6px;}
-  .field input{width:100%;padding:13px 14px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-size:14.5px;background:#fffdf7;}
+  .field input,.field select,.field textarea{width:100%;padding:13px 14px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-size:14.5px;background:#fffdf7;}
   .field input:focus{outline:2px solid var(--pink);border-color:var(--pink);}
   .field-error{color:var(--red);font-size:12px;margin-top:5px;display:none;font-weight:700;}
   .field-error.show{display:block;}
@@ -78,14 +80,32 @@
   .badge.delivery{background:#fde6ef;color:var(--pink-dark);}
   .or-items{font-size:13px;color:#8a7563;line-height:1.8;}
   .or-meta{font-size:12.5px;color:#9c8a7a;margin-top:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .or-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+  .status-select{padding:7px 12px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-weight:800;font-size:12.5px;background:#fffdf7;cursor:pointer;}
+  .status-select.st-prep{color:#a67c00;}
+  .status-select.st-ready{color:var(--blue);}
+  .status-select.st-done{color:#2c7a3d;}
   .mini-btn{font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:12px;background:#fdeaea;color:var(--red);border:none;cursor:pointer;}
   .mini-btn:hover{background:var(--red);color:#fff;}
+  .rating-line{font-size:12.5px;color:var(--gold);font-weight:800;margin-top:6px;}
 
-  .admin-plist-row{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+  .admin-plist-row{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.04);cursor:grab;}
+  .admin-plist-row.dragging{opacity:.4;}
+  .admin-plist-row.hidden-prod{opacity:.55;background:#f7f2ea;}
+  .drag-handle{color:#cdb89c;font-size:18px;user-select:none;}
   .admin-plist-row img{width:46px;height:46px;border-radius:8px;object-fit:cover;flex-shrink:0;}
-  .admin-plist-info{flex:1;}
+  .admin-plist-info{flex:1;min-width:0;}
   .admin-plist-info b{display:block;font-size:14px;color:var(--choc);}
   .admin-plist-info span{font-size:12px;color:#9c8a7a;}
+  .prod-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .prod-actions button{font-size:11px;font-weight:800;padding:6px 10px;border-radius:9px;border:none;cursor:pointer;}
+  .act-edit{background:#dbe9ff;color:var(--blue);}
+  .act-edit:hover{background:var(--blue);color:#fff;}
+  .act-hide{background:#fff3d6;color:#a67c00;}
+  .act-hide:hover{background:var(--gold);color:#fff;}
+  .act-del{background:#fdeaea;color:var(--red);}
+  .act-del:hover{background:var(--red);color:#fff;}
+
   .admin-product-form{background:#fff8ee;border:1.5px dashed var(--gold);border-radius:14px;padding:18px;margin-bottom:20px;}
   .admin-product-form h4{margin-bottom:12px;color:var(--choc);font-size:15.5px;}
   .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px;}
@@ -102,6 +122,21 @@
   .pass-row button{padding:10px 20px;background:var(--gold);color:var(--choc);border-radius:10px;font-weight:800;cursor:pointer;}
   .pass-row button:hover{background:var(--gold-light);}
 
+  .coupon-form{background:#fff8ee;border:1.5px dashed var(--gold);border-radius:14px;padding:18px;margin-bottom:20px;}
+  .coupon-form h4{margin-bottom:12px;color:var(--choc);font-size:15.5px;}
+  .coupon-row-item{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.04);flex-wrap:wrap;gap:8px;}
+  .coupon-row-item b{direction:ltr;color:var(--pink-dark);font-size:15px;}
+  .coupon-row-item span.cv{font-size:12.5px;color:#8a7563;font-weight:700;}
+  .coupon-badge{font-size:11px;font-weight:800;padding:4px 10px;border-radius:10px;}
+  .coupon-badge.active{background:#e3f2e6;color:#2c7a3d;}
+  .coupon-badge.inactive{background:#f1e3c8;color:#9c8a7a;}
+
+  .cleanup-box{background:#fff;border-radius:14px;padding:18px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+  .cleanup-box h4{margin-bottom:8px;color:var(--choc);}
+  .cleanup-box p{color:#8a7563;font-size:13.5px;line-height:1.7;margin-bottom:12px;}
+  .cleanup-btn{background:var(--red);color:#fff;padding:10px 20px;border-radius:10px;font-weight:800;cursor:pointer;font-size:13.5px;}
+  .cleanup-btn:hover{background:#a02f21;}
+
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--choc);color:var(--gold-light);padding:13px 26px;border-radius:30px;font-weight:800;font-size:14px;z-index:900;transition:.3s;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90vw;text-align:center;}
   .toast.show{transform:translateX(-50%) translateY(0);}
   .toast.error{background:var(--red);color:#fff;}
@@ -114,11 +149,19 @@
   .diag-banner{display:none;background:var(--red);color:#fff;text-align:center;font-weight:800;font-size:13.5px;padding:10px 16px;}
   .diag-banner.show{display:block;}
 
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,10,5,.6);z-index:700;display:none;align-items:center;justify-content:center;padding:18px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:#fff;border-radius:20px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;position:relative;}
+  .modal-close{position:absolute;top:16px;left:16px;width:34px;height:34px;border-radius:50%;background:#f3e6cf;font-size:18px;z-index:5;cursor:pointer;}
+  .modal-close:hover{background:var(--pink);color:#fff;}
+  .modal-box h3{font-size:21px;color:var(--choc);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+
   @media(max-width:600px){
     .login-box{padding:30px 22px;}
     .admin-stats{grid-template-columns:1fr 1fr;}
     .dashboard-header{flex-direction:column;text-align:center;}
     .pass-row{flex-direction:column;}
+    .admin-plist-row{flex-wrap:wrap;}
   }
 </style>
 </head>
@@ -170,6 +213,7 @@
   <div class="admin-tabs">
     <button class="admin-tab-btn active" data-panel="ordersPanel">📋 الطلبات</button>
     <button class="admin-tab-btn" data-panel="productsPanel">📦 المنتجات</button>
+    <button class="admin-tab-btn" data-panel="couponsPanel">🎟️ الكوبونات</button>
     <button class="admin-tab-btn" data-panel="blacklistPanel">🚫 العملاء المحظورين</button>
     <button class="admin-tab-btn" data-panel="settingsPanel">⚙️ الإعدادات</button>
   </div>
@@ -203,7 +247,24 @@
       </div>
       <button class="submit-btn" id="addProductBtn">إضافة المنتج</button>
     </div>
+    <p style="color:#9c8a7a;font-size:12.5px;margin-bottom:10px;">💡 اسحب المنتج من أيقونة ☰ عشان ترتبه، دوس "تعديل" أو "حذف" أو "إخفاء" من كل منتج</p>
     <div id="adminProductsList"></div>
+  </div>
+
+  <div class="admin-panel" id="couponsPanel">
+    <div class="coupon-form">
+      <h4>➕ إضافة كوبون جديد</h4>
+      <div class="form-grid">
+        <input type="text" id="newCCode" placeholder="كود الكوبون (مثال: WELCOME10)" style="text-transform:uppercase;">
+        <select id="newCType">
+          <option value="percent">نسبة مئوية %</option>
+          <option value="fixed">مبلغ ثابت جنيه</option>
+        </select>
+        <input type="number" id="newCValue" placeholder="القيمة">
+      </div>
+      <button class="submit-btn" id="addCouponBtn">إضافة الكوبون</button>
+    </div>
+    <div id="couponsList"></div>
   </div>
 
   <div class="admin-panel" id="blacklistPanel">
@@ -225,11 +286,50 @@
       </div>
       <div id="passMsg" style="margin-top:10px;font-weight:700;display:none;"></div>
     </div>
+
+    <div class="cleanup-box">
+      <h4>🗑️ مسح الطلبات القديمة</h4>
+      <p>
+        الطلبات بتتمسح تلقائيًا لما عمرها يعدي 12 ساعة، بس المسح ده بيحصل بس لما حد يفتح موقع الطلب أو لوحة التحكم (مش فيه سيرفر شغال طول الوقت في الخلفية).
+        لو عايز مسح فوري دلوقتي، دوس الزرار ده.
+      </p>
+      <button class="cleanup-btn" id="manualCleanupBtn">امسح الطلبات الأقدم من 12 ساعة الآن</button>
+    </div>
+
     <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
       <h4>📋 معلومات الفرع</h4>
       <p style="color:#8a7563;margin-top:8px;"><strong>اسم المستخدم:</strong> <span id="settingsUsername">ELGABRY1</span></p>
       <p style="color:#8a7563;"><strong>الفرع:</strong> <span id="settingsBranch">طنطا – الجلاء – الموقف القديم</span></p>
     </div>
+  </div>
+</div>
+
+<!-- ===== EDIT PRODUCT MODAL ===== -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close="editModal">×</button>
+    <h3>✏️ تعديل المنتج</h3>
+    <div class="field"><label>اسم المنتج</label><input type="text" id="editPName"></div>
+    <div class="field">
+      <label>القسم</label>
+      <select id="editPCat">
+        <option value="mekassarat">مكسرات</option>
+        <option value="lab">لب</option>
+        <option value="choco">شوكولاتة وسناكس</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>نوع البيع</label>
+      <select id="editPType">
+        <option value="gram">بيع بالجرام</option>
+        <option value="piece">بيع بالحبة</option>
+      </select>
+    </div>
+    <div class="field"><label>السعر</label><input type="number" id="editPPrice"></div>
+    <div class="field"><label>رابط الصورة</label><input type="text" id="editPImg"></div>
+    <div class="field"><label>تاج (اختياري)</label><input type="text" id="editPTag"></div>
+    <div class="field"><label>الوصف</label><input type="text" id="editPDesc"></div>
+    <button class="submit-btn" id="saveEditBtn">حفظ التعديلات</button>
   </div>
 </div>
 
@@ -245,20 +345,54 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 /* ============================================================
    ⚠️ إعدادات قاعدة البيانات المطلوبة (Supabase SQL Editor)
-   لازم تتشغل مرة واحدة عشان لوحة التحكم تقدر تقرا/تعدل بيانات
-   الطلبات والمنتجات والقائمة السوداء (RLS Policies):
+   شغّل الأوامر دي مرة واحدة عشان كل الميزات الجديدة تشتغل:
 
+   -- الطلبات: حالة + كوبون + تقييم
+   alter table public.orders add column if not exists status text default 'قيد التحضير';
+   alter table public.orders add column if not exists coupon_code text;
+   alter table public.orders add column if not exists discount numeric default 0;
+   alter table public.orders add column if not exists rating int;
+   alter table public.orders add column if not exists rating_comment text;
    alter table public.orders enable row level security;
+   create policy "anon insert orders" on public.orders for insert to anon with check (true);
    create policy "anon select orders" on public.orders for select to anon using (true);
+   create policy "anon update orders" on public.orders for update to anon using (true) with check (true);
+   create policy "anon delete orders" on public.orders for delete to anon using (true);
 
+   -- المنتجات: إخفاء + ترتيب
+   alter table public.products add column if not exists hidden boolean default false;
+   alter table public.products add column if not exists sort_order integer default 0;
+   alter table public.products enable row level security;
+   create policy "anon read products" on public.products for select to anon using (true);
+   create policy "anon write products" on public.products for insert to anon with check (true);
+   create policy "anon update products" on public.products for update to anon using (true) with check (true);
+   create policy "anon delete products" on public.products for delete to anon using (true);
+
+   -- الكوبونات (جدول جديد)
+   create table if not exists public.coupons (
+     id text primary key,
+     code text unique not null,
+     type text not null default 'percent',
+     value numeric not null,
+     active boolean default true,
+     created_at timestamptz default now()
+   );
+   alter table public.coupons enable row level security;
+   create policy "anon read coupons" on public.coupons for select to anon using (true);
+   create policy "anon write coupons" on public.coupons for insert to anon with check (true);
+   create policy "anon update coupons" on public.coupons for update to anon using (true) with check (true);
+   create policy "anon delete coupons" on public.coupons for delete to anon using (true);
+
+   -- القائمة السوداء
    alter table public.blacklist enable row level security;
    create policy "anon read blacklist" on public.blacklist for select to anon using (true);
    create policy "anon write blacklist" on public.blacklist for insert to anon with check (true);
    create policy "anon delete blacklist" on public.blacklist for delete to anon using (true);
 
-   alter table public.products enable row level security;
-   create policy "anon read products" on public.products for select to anon using (true);
-   create policy "anon write products" on public.products for insert to anon with check (true);
+   -- (اختياري لكن مثالي) مسح تلقائي حقيقي كل 12 ساعة حتى لو محدش
+   -- فاتح الموقع: فعّل إضافة pg_cron من Database > Extensions، بعدين:
+   select cron.schedule('delete-old-orders','0 */12 * * *',
+     $$ delete from public.orders where created_at < now() - interval '12 hours' $$);
    ============================================================ */
 
 const BRANCH = {
@@ -269,11 +403,14 @@ const BRANCH = {
 };
 
 const FALLBACK_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' fill='%23f3e6cf'/><text x='50%' y='50%' font-size='60' text-anchor='middle' dominant-baseline='middle'>🌰</text></svg>";
+const STATUS_LIST = ['قيد التحضير', 'جاهز', 'تم التسليم'];
+const STATUS_KEY = { 'قيد التحضير': 'st-prep', 'جاهز': 'st-ready', 'تم التسليم': 'st-done' };
 
 let PRODUCTS = [];
 let isAdminLoggedIn = false;
 let lastOrderCount = 0;
 let branchPassword = BRANCH.password;
+let draggedId = null;
 
 function showDiagBanner(msg) {
   const b = document.getElementById('diagBanner');
@@ -293,16 +430,19 @@ function saveBranchPassword() {
 }
 
 /* ============================================================
-   SUPABASE FUNCTIONS
+   SUPABASE: PRODUCTS
    ============================================================ */
 async function loadProductsFromSupabase() {
   try {
-    const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: true });
+    const { data, error } = await supabaseClient.from('products').select('*').order('sort_order', { ascending: true });
     if (error) { console.error('❌ خطأ في تحميل المنتجات:', error); PRODUCTS = []; return; }
     PRODUCTS = data || [];
   } catch (e) { console.error('❌ خطأ غير متوقع في تحميل المنتجات:', e); PRODUCTS = []; }
 }
 
+/* ============================================================
+   SUPABASE: ORDERS
+   ============================================================ */
 async function loadOrdersFromSupabase() {
   try {
     const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
@@ -314,6 +454,25 @@ async function loadOrdersFromSupabase() {
     hideDiagBanner();
     return data || [];
   } catch (e) { console.error('❌ خطأ غير متوقع في تحميل الطلبات:', e); return []; }
+}
+
+async function updateOrderStatus(orderId, status) {
+  try {
+    const { error } = await supabaseClient.from('orders').update({ status }).eq('id', orderId);
+    if (error) { console.error('❌ خطأ في تحديث حالة الطلب:', error); return false; }
+    return true;
+  } catch (e) { console.error('❌ خطأ غير متوقع:', e); return false; }
+}
+
+/* ============================================================
+   AUTO-CLEANUP: مسح الطلبات الأقدم من 12 ساعة (best-effort)
+   ============================================================ */
+async function cleanupOldOrders() {
+  try {
+    const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+    const { error } = await supabaseClient.from('orders').delete().lt('created_at', cutoff);
+    if (error) console.error('❌ خطأ في مسح الطلبات القديمة:', error);
+  } catch (e) { console.error('❌ خطأ غير متوقع في المسح:', e); }
 }
 
 async function loadBlacklistFromSupabase() {
@@ -422,6 +581,7 @@ async function showDashboard() {
   await loadOrders();
   renderAdminProducts();
   renderBlacklist();
+  renderCoupons();
 }
 
 document.getElementById('refreshOrdersBtn').addEventListener('click', () => { loadOrders(); showToast('🔄 بيتم التحديث...'); });
@@ -448,11 +608,21 @@ document.getElementById('changePassBtn').addEventListener('click', () => {
 
   branchPassword = newPass;
   saveBranchPassword();
-  msgEl.style.display = 'block'; msgEl.style.color = 'var(--green-wa,#25d366)'; msgEl.textContent = '✅ تم تغيير كلمة المرور بنجاح!';
+  msgEl.style.display = 'block'; msgEl.style.color = 'var(--green-wa)'; msgEl.textContent = '✅ تم تغيير كلمة المرور بنجاح!';
   document.getElementById('currentPass').value = '';
   document.getElementById('newPass').value = '';
   document.getElementById('confirmPass').value = '';
   setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+});
+
+/* ===================== MANUAL CLEANUP ===================== */
+document.getElementById('manualCleanupBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('manualCleanupBtn');
+  btn.textContent = 'جاري المسح...';
+  await cleanupOldOrders();
+  btn.textContent = 'امسح الطلبات الأقدم من 12 ساعة الآن';
+  showToast('✅ اتمسحت الطلبات الأقدم من 12 ساعة');
+  loadOrders();
 });
 
 /* ===================== ORDERS ===================== */
@@ -482,7 +652,12 @@ async function loadOrders() {
     return;
   }
 
-  list.innerHTML = orders.map(o => `
+  list.innerHTML = orders.map(o => {
+    const status = o.status || 'قيد التحضير';
+    const statusClass = STATUS_KEY[status] || 'st-prep';
+    const ratingHtml = o.rating ? `<div class="rating-line">⭐ تقييم العميل: ${'⭐'.repeat(o.rating)} ${o.rating_comment ? '— "' + o.rating_comment + '"' : ''}</div>` : '';
+    const discountHtml = o.discount > 0 ? ` (خصم ${o.discount} ج${o.coupon_code ? ' - ' + o.coupon_code : ''})` : '';
+    return `
     <div class="order-row">
       <div class="or-top">
         <b>${o.customer_name || 'عميل'} — ${o.phone || '-'}</b>
@@ -490,11 +665,29 @@ async function loadOrders() {
       </div>
       <div class="or-items">${o.items ? o.items.map(it => `${it.name} (${it.unitLabel} × ${it.qty})`).join('، ') : '-'}</div>
       <div class="or-meta">
-        <span>📍 ${o.fulfillment === 'pickup' ? 'الجلاء - طنطا' : (o.address || '-')} &nbsp;|&nbsp; 💰 ${o.total} جنيه &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
+        <span>📍 ${o.fulfillment === 'pickup' ? 'الجلاء - طنطا' : (o.address || '-')} &nbsp;|&nbsp; 💰 ${o.total} جنيه${discountHtml} &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
+      </div>
+      ${ratingHtml}
+      <div class="or-actions">
+        <select class="status-select ${statusClass}" data-order="${o.id}">
+          ${STATUS_LIST.map(s => `<option value="${s}" ${s === status ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
         <button class="mini-btn" data-phone="${o.phone}">حظر العميل</button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
+
+  list.querySelectorAll('.status-select').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      const orderId = sel.dataset.order;
+      const newStatus = sel.value;
+      sel.className = 'status-select ' + (STATUS_KEY[newStatus] || 'st-prep');
+      const ok = await updateOrderStatus(orderId, newStatus);
+      if (ok) showToast('✅ اتحدثت حالة الطلب: ' + newStatus);
+      else showToast('حصل خطأ في تحديث الحالة', true);
+    });
+  });
 
   list.querySelectorAll('.mini-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -509,15 +702,83 @@ async function loadOrders() {
 function renderAdminProducts() {
   const list = document.getElementById('adminProductsList');
   if (PRODUCTS.length === 0) { list.innerHTML = '<div class="empty-orders">مفيش منتجات لسه، ضيف أول منتج من الفورم فوق 👆</div>'; return; }
+
   list.innerHTML = PRODUCTS.map(p => `
-    <div class="admin-plist-row">
+    <div class="admin-plist-row ${p.hidden ? 'hidden-prod' : ''}" draggable="true" data-id="${p.id}">
+      <span class="drag-handle">☰</span>
       <img src="${p.image || p.img}" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
       <div class="admin-plist-info">
-        <b>${p.name}</b>
+        <b>${p.name} ${p.hidden ? '(مخفي)' : ''}</b>
         <span>${p.category === 'mekassarat' || p.cat === 'mekassarat' ? 'مكسرات' : (p.category === 'lab' || p.cat === 'lab') ? 'لب' : 'شوكولاتة وسناكس'} — ${p.type === 'gram' ? p.price + ' ج/100جم' : p.price + ' ج/حبة'}</span>
+      </div>
+      <div class="prod-actions">
+        <button class="act-edit" data-edit="${p.id}">تعديل</button>
+        <button class="act-hide" data-hide="${p.id}">${p.hidden ? 'إظهار' : 'إخفاء'}</button>
+        <button class="act-del" data-del="${p.id}">حذف</button>
       </div>
     </div>
   `).join('');
+
+  // Edit
+  list.querySelectorAll('[data-edit]').forEach(btn => {
+    btn.addEventListener('click', () => openEditModal(btn.dataset.edit));
+  });
+
+  // Hide/show
+  list.querySelectorAll('[data-hide]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.hide;
+      const prod = PRODUCTS.find(p => p.id === id);
+      const newHidden = !prod.hidden;
+      try {
+        const { error } = await supabaseClient.from('products').update({ hidden: newHidden }).eq('id', id);
+        if (error) throw error;
+        prod.hidden = newHidden;
+        renderAdminProducts();
+        showToast(newHidden ? '👁️ اتخفى المنتج' : '✅ ظهر المنتج تاني');
+      } catch (e) { showToast('حصل خطأ: ' + (e.message || ''), true); }
+    });
+  });
+
+  // Delete
+  list.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.del;
+      const prod = PRODUCTS.find(p => p.id === id);
+      if (!confirm(`متأكد إنك عايز تحذف "${prod.name}"؟ الحذف نهائي.`)) return;
+      try {
+        const { error } = await supabaseClient.from('products').delete().eq('id', id);
+        if (error) throw error;
+        PRODUCTS = PRODUCTS.filter(p => p.id !== id);
+        renderAdminProducts();
+        showToast('🗑️ اتحذف المنتج');
+      } catch (e) { showToast('حصل خطأ في الحذف: ' + (e.message || ''), true); }
+    });
+  });
+
+  // Drag & drop reorder
+  const rows = list.querySelectorAll('.admin-plist-row');
+  rows.forEach(row => {
+    row.addEventListener('dragstart', () => { draggedId = row.dataset.id; row.classList.add('dragging'); });
+    row.addEventListener('dragend', () => { row.classList.remove('dragging'); });
+    row.addEventListener('dragover', e => { e.preventDefault(); });
+    row.addEventListener('drop', async e => {
+      e.preventDefault();
+      const targetId = row.dataset.id;
+      if (!draggedId || draggedId === targetId) return;
+      const fromIdx = PRODUCTS.findIndex(p => p.id === draggedId);
+      const toIdx = PRODUCTS.findIndex(p => p.id === targetId);
+      if (fromIdx === -1 || toIdx === -1) return;
+      const [moved] = PRODUCTS.splice(fromIdx, 1);
+      PRODUCTS.splice(toIdx, 0, moved);
+      renderAdminProducts();
+      // Persist new sort_order for all products
+      try {
+        await Promise.all(PRODUCTS.map((p, i) => supabaseClient.from('products').update({ sort_order: i }).eq('id', p.id)));
+        showToast('✅ اتحفظ الترتيب الجديد');
+      } catch (err) { showToast('حصل خطأ في حفظ الترتيب', true); }
+    });
+  });
 }
 
 document.getElementById('addProductBtn').addEventListener('click', async () => {
@@ -532,7 +793,8 @@ document.getElementById('addProductBtn').addEventListener('click', async () => {
   if (!name || !img || !price || price <= 0) { showToast('لازم تكتب اسم وصورة وسعر صحيح'); return; }
 
   try {
-    const { error } = await supabaseClient.from('products').insert([{ id: 'p_' + Date.now(), name, category: cat, price, image: img, type, tag, description: desc }]);
+    const nextSort = PRODUCTS.length;
+    const { error } = await supabaseClient.from('products').insert([{ id: 'p_' + Date.now(), name, category: cat, price, image: img, type, tag, description: desc, sort_order: nextSort, hidden: false }]);
     if (error) throw error;
     await loadProductsFromSupabase();
     renderAdminProducts();
@@ -543,6 +805,126 @@ document.getElementById('addProductBtn').addEventListener('click', async () => {
     document.getElementById('newPDesc').value = '';
     showToast('اتضاف المنتج بنجاح ✅ - هيظهر في موقع الطلب فورًا');
   } catch (e) { console.error('❌ خطأ في إضافة المنتج:', e); showToast('حصل خطأ في الإضافة ❌: ' + (e.message || ''), true); }
+});
+
+/* ===================== EDIT MODAL ===================== */
+let editingId = null;
+function openEditModal(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('editPName').value = p.name || '';
+  document.getElementById('editPCat').value = p.category || p.cat || 'mekassarat';
+  document.getElementById('editPType').value = p.type || 'gram';
+  document.getElementById('editPPrice').value = p.price || '';
+  document.getElementById('editPImg').value = p.image || p.img || '';
+  document.getElementById('editPTag').value = p.tag || '';
+  document.getElementById('editPDesc').value = p.description || p.desc || '';
+  openModal('editModal');
+}
+
+document.getElementById('saveEditBtn').addEventListener('click', async () => {
+  if (!editingId) return;
+  const name = document.getElementById('editPName').value.trim();
+  const category = document.getElementById('editPCat').value;
+  const type = document.getElementById('editPType').value;
+  const price = parseFloat(document.getElementById('editPPrice').value);
+  const image = document.getElementById('editPImg').value.trim();
+  const tag = document.getElementById('editPTag').value.trim();
+  const description = document.getElementById('editPDesc').value.trim();
+
+  if (!name || !image || !price || price <= 0) { showToast('لازم تكتب اسم وصورة وسعر صحيح'); return; }
+
+  try {
+    const { error } = await supabaseClient.from('products').update({ name, category, type, price, image, tag, description }).eq('id', editingId);
+    if (error) throw error;
+    await loadProductsFromSupabase();
+    renderAdminProducts();
+    closeModal('editModal');
+    showToast('✅ اتحفظت التعديلات');
+  } catch (e) { showToast('حصل خطأ: ' + (e.message || ''), true); }
+});
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-close').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.dataset.close));
+});
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) closeModal(ov.id); });
+});
+
+/* ===================== COUPONS ===================== */
+async function loadCouponsFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient.from('coupons').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('❌ خطأ في تحميل الكوبونات:', error); return []; }
+    return data || [];
+  } catch (e) { console.error('❌ خطأ غير متوقع:', e); return []; }
+}
+
+async function renderCoupons() {
+  const list = document.getElementById('couponsList');
+  const coupons = await loadCouponsFromSupabase();
+  if (coupons.length === 0) { list.innerHTML = '<div class="empty-orders">مفيش كوبونات لسه، ضيف أول كوبون من الفورم فوق 👆</div>'; return; }
+  list.innerHTML = coupons.map(c => `
+    <div class="coupon-row-item">
+      <div>
+        <b>${c.code}</b> &nbsp;
+        <span class="cv">${c.type === 'percent' ? c.value + '%' : c.value + ' جنيه'}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="coupon-badge ${c.active ? 'active' : 'inactive'}">${c.active ? 'شغال' : 'موقوف'}</span>
+        <button class="mini-btn" data-toggle="${c.id}" style="background:#dbe9ff;color:var(--blue);">${c.active ? 'إيقاف' : 'تشغيل'}</button>
+        <button class="mini-btn" data-delc="${c.id}">حذف</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const c = coupons.find(x => x.id === btn.dataset.toggle);
+      try {
+        const { error } = await supabaseClient.from('coupons').update({ active: !c.active }).eq('id', c.id);
+        if (error) throw error;
+        renderCoupons();
+        showToast('✅ اتحدث حال الكوبون');
+      } catch (e) { showToast('حصل خطأ: ' + (e.message || ''), true); }
+    });
+  });
+
+  list.querySelectorAll('[data-delc]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('متأكد إنك عايز تحذف الكوبون؟')) return;
+      try {
+        const { error } = await supabaseClient.from('coupons').delete().eq('id', btn.dataset.delc);
+        if (error) throw error;
+        renderCoupons();
+        showToast('🗑️ اتحذف الكوبون');
+      } catch (e) { showToast('حصل خطأ: ' + (e.message || ''), true); }
+    });
+  });
+}
+
+document.getElementById('addCouponBtn').addEventListener('click', async () => {
+  const code = document.getElementById('newCCode').value.trim().toUpperCase();
+  const type = document.getElementById('newCType').value;
+  const value = parseFloat(document.getElementById('newCValue').value);
+
+  if (!code || !value || value <= 0) { showToast('لازم تكتب كود وقيمة صحيحة'); return; }
+  if (type === 'percent' && value > 100) { showToast('النسبة المئوية لازم تكون 100 أو أقل'); return; }
+
+  try {
+    const { error } = await supabaseClient.from('coupons').insert([{ id: 'c_' + Date.now(), code, type, value, active: true }]);
+    if (error) throw error;
+    document.getElementById('newCCode').value = '';
+    document.getElementById('newCValue').value = '';
+    renderCoupons();
+    showToast('🎟️ اتضاف الكوبون بنجاح');
+  } catch (e) {
+    const msg = /duplicate|unique/i.test(e.message || '') ? 'الكود ده مستخدم قبل كده' : (e.message || '');
+    showToast('حصل خطأ: ' + msg, true);
+  }
 });
 
 /* ===================== BLACKLIST ===================== */
@@ -603,6 +985,9 @@ function showToast(msg, isError) {
   } else {
     showLogin();
   }
+
+  cleanupOldOrders();
+  setInterval(cleanupOldOrders, 15 * 60 * 1000); // كل 15 دقيقة لو الداشبورد فاضلة مفتوحة
 
   // تحديث تلقائي كل 5 ثواني لو مسجل دخول
   setInterval(async () => {
