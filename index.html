@@ -390,9 +390,10 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
    create policy "anon delete blacklist" on public.blacklist for delete to anon using (true);
 
    -- (اختياري لكن مثالي) مسح تلقائي حقيقي كل 12 ساعة حتى لو محدش
-   -- فاتح الموقع: فعّل إضافة pg_cron من Database > Extensions، بعدين:
-   select cron.schedule('delete-old-orders','0 */12 * * *',
-     $$ delete from public.orders where created_at < now() - interval '12 hours' $$);
+   -- فاتح الموقع: فعّل إضافة pg_cron من Database > Extensions في
+   -- Supabase، وبعدين شوف رسالتي بعد الكود لأمر الـ cron الكامل
+   -- (متسبوش أي علامة نجمة وشرطة مائلة جوه كومنتات الجافاسكريبت،
+   -- عشان كده حطيناه برا الكود هنا)
    ============================================================ */
 
 const BRANCH = {
@@ -471,8 +472,15 @@ async function cleanupOldOrders() {
   try {
     const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
     const { error } = await supabaseClient.from('orders').delete().lt('created_at', cutoff);
-    if (error) console.error('❌ خطأ في مسح الطلبات القديمة:', error);
-  } catch (e) { console.error('❌ خطأ غير متوقع في المسح:', e); }
+    if (error) {
+      console.error('❌ خطأ في مسح الطلبات القديمة (على الأغلب لازم تشغّل أوامر الـ SQL فوق):', error.message || error);
+      return { success: false, message: error.message || 'خطأ غير معروف' };
+    }
+    return { success: true };
+  } catch (e) {
+    console.error('❌ خطأ غير متوقع في المسح:', e && e.message ? e.message : e);
+    return { success: false, message: (e && e.message) || 'خطأ غير متوقع' };
+  }
 }
 
 async function loadBlacklistFromSupabase() {
@@ -619,10 +627,14 @@ document.getElementById('changePassBtn').addEventListener('click', () => {
 document.getElementById('manualCleanupBtn').addEventListener('click', async () => {
   const btn = document.getElementById('manualCleanupBtn');
   btn.textContent = 'جاري المسح...';
-  await cleanupOldOrders();
+  const result = await cleanupOldOrders();
   btn.textContent = 'امسح الطلبات الأقدم من 12 ساعة الآن';
-  showToast('✅ اتمسحت الطلبات الأقدم من 12 ساعة');
-  loadOrders();
+  if (result.success) {
+    showToast('✅ اتمسحت الطلبات الأقدم من 12 ساعة');
+    loadOrders();
+  } else {
+    showToast('❌ فشل المسح: ' + result.message + ' — تأكد إنك شغّلت أوامر الـ SQL', true);
+  }
 });
 
 /* ===================== ORDERS ===================== */
@@ -977,13 +989,21 @@ function showToast(msg, isError) {
 
 /* ===================== INIT ===================== */
 (async function init() {
-  loadBranchPassword();
-  document.getElementById('siteLoader').classList.add('hide');
+  // شبكة أمان: مهما حصل أي خطأ جوه أي جزء، شاشة التحميل لازم تختفي
+  // وتوري إما لوحة التحكم أو شاشة الدخول - عشان الصفحة متفضلش عالقة
+  try {
+    loadBranchPassword();
 
-  if (checkAdminSession()) {
-    await showDashboard();
-  } else {
+    if (checkAdminSession()) {
+      await showDashboard();
+    } else {
+      showLogin();
+    }
+  } catch (e) {
+    console.error('❌ خطأ غير متوقع أثناء تحميل الصفحة:', e && e.message ? e.message : e);
     showLogin();
+  } finally {
+    document.getElementById('siteLoader').classList.add('hide');
   }
 
   cleanupOldOrders();
