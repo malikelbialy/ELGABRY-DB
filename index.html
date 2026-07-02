@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم - محمصة الجابري</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --pink:#d6336c;
+    --pink-dark:#a61e4d;
+    --gold:#d4a13d;
+    --gold-light:#f3d899;
+    --cream:#fff8ee;
+    --choc:#3b2415;
+    --ink:#2b1810;
+    --red:#c0392b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Tajawal','Cairo',sans-serif;background:#f5f0eb;color:var(--ink);min-height:100vh;}
+  h1,h2,h3,h4{font-family:'Cairo',sans-serif;}
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;border:none;}
+  a{text-decoration:none;color:inherit;}
+
+  .site-loader{position:fixed;inset:0;background:var(--cream);z-index:2000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+  .site-loader .ld-spin{width:54px;height:54px;border-radius:50%;border:5px solid var(--gold-light);border-top-color:var(--pink);animation:spin .9s linear infinite;}
+  .site-loader span{font-weight:800;color:var(--choc);font-family:'Cairo',sans-serif;}
+  .site-loader.hide{display:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ===== LOGIN SCREEN ===== */
+  .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, var(--pink-dark) 0%, var(--pink) 55%, #e8597f 100%);padding:20px;}
+  .login-box{background:#fff;border-radius:22px;padding:40px 32px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .login-box .lb-logo{width:70px;height:70px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 18px;}
+  .login-box h2{text-align:center;color:var(--choc);font-size:22px;margin-bottom:6px;}
+  .login-box p.sub{text-align:center;color:#9c8a7a;font-size:13.5px;margin-bottom:26px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13.5px;font-weight:800;color:var(--choc);margin-bottom:6px;}
+  .field input{width:100%;padding:13px 14px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-size:14.5px;background:#fffdf7;}
+  .field input:focus{outline:2px solid var(--pink);border-color:var(--pink);}
+  .field-error{color:var(--red);font-size:12px;margin-top:5px;display:none;font-weight:700;}
+  .field-error.show{display:block;}
+  .submit-btn{width:100%;background:var(--gold);color:var(--choc);padding:14px;border-radius:11px;font-weight:900;font-size:15.5px;cursor:pointer;margin-top:6px;}
+  .submit-btn:hover{background:var(--gold-light);}
+  .back-link{display:block;text-align:center;margin-top:18px;color:#9c8a7a;font-size:13px;font-weight:700;}
+  .back-link:hover{color:var(--pink);}
+
+  /* ===== DASHBOARD ===== */
+  .dashboard-page{display:none;padding:20px;max-width:1200px;margin:0 auto;}
+  .dashboard-page.show{display:block;}
+  .dashboard-header{background:var(--pink-dark);padding:20px 30px;border-radius:16px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:24px;}
+  .dashboard-header h2{font-size:24px;}
+  .dashboard-header .hdr-btn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:10px 20px;border-radius:10px;font-weight:800;cursor:pointer;}
+  .dashboard-header .hdr-btn:hover{background:rgba(255,255,255,.3);}
+  .branch-badge{background:var(--gold);color:var(--choc);padding:4px 16px;border-radius:20px;font-weight:800;font-size:14px;}
+
+  .admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px;}
+  .stat-box{background:#fff;border-radius:14px;padding:18px 20px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .stat-box b{display:block;font-size:26px;color:var(--pink-dark);}
+  .stat-box span{font-size:13px;color:#9c8a7a;font-weight:700;}
+
+  .admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;border-bottom:2px solid #e8ddd0;padding-bottom:14px;}
+  .admin-tab-btn{padding:10px 22px;border-radius:12px;background:#fff;border:2px solid #e8ddd0;color:var(--choc);font-weight:800;font-size:14px;cursor:pointer;transition:.2s;}
+  .admin-tab-btn.active{background:var(--pink);color:#fff;border-color:var(--pink);}
+  .admin-tab-btn:hover:not(.active){background:#f3e6cf;}
+
+  .admin-panel{display:none;}
+  .admin-panel.active{display:block;}
+
+  .order-row{background:#fff;border-radius:14px;padding:16px 20px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);border-right:4px solid var(--gold);}
+  .order-row .or-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .order-row .or-top b{color:var(--choc);font-size:16px;}
+  .badge{font-size:11px;font-weight:800;padding:4px 12px;border-radius:10px;}
+  .badge.pickup{background:#e3f2e6;color:#2c7a3d;}
+  .badge.delivery{background:#fde6ef;color:var(--pink-dark);}
+  .or-items{font-size:13px;color:#8a7563;line-height:1.8;}
+  .or-meta{font-size:12.5px;color:#9c8a7a;margin-top:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .mini-btn{font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:12px;background:#fdeaea;color:var(--red);border:none;cursor:pointer;}
+  .mini-btn:hover{background:var(--red);color:#fff;}
+
+  .admin-plist-row{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+  .admin-plist-row img{width:46px;height:46px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+  .admin-plist-info{flex:1;}
+  .admin-plist-info b{display:block;font-size:14px;color:var(--choc);}
+  .admin-plist-info span{font-size:12px;color:#9c8a7a;}
+  .admin-product-form{background:#fff8ee;border:1.5px dashed var(--gold);border-radius:14px;padding:18px;margin-bottom:20px;}
+  .admin-product-form h4{margin-bottom:12px;color:var(--choc);font-size:15.5px;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:10px;}
+  .form-grid input,.form-grid select{padding:12px 14px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-size:14px;background:#fffdf7;}
+  .blacklist-form{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .blacklist-form input{flex:1;min-width:180px;padding:12px 14px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-size:14.5px;background:#fffdf7;}
+  .blacklist-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+  .blacklist-row b{direction:ltr;}
+  .empty-orders{text-align:center;padding:50px 10px;color:#bba88f;}
+  .change-pass-form{background:#fff;border-radius:14px;padding:18px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+  .change-pass-form h4{margin-bottom:12px;color:var(--choc);}
+  .pass-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .pass-row input{flex:1;min-width:150px;padding:10px 14px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-size:14px;background:#fffdf7;}
+  .pass-row button{padding:10px 20px;background:var(--gold);color:var(--choc);border-radius:10px;font-weight:800;cursor:pointer;}
+  .pass-row button:hover{background:var(--gold-light);}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--choc);color:var(--gold-light);padding:13px 26px;border-radius:30px;font-weight:800;font-size:14px;z-index:900;transition:.3s;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90vw;text-align:center;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast.error{background:var(--red);color:#fff;}
+
+  .notif-badge{position:relative;}
+  .notif-dot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid #fff;display:none;animation:pulse 1.5s infinite;}
+  .notif-dot.show{display:block;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+
+  .diag-banner{display:none;background:var(--red);color:#fff;text-align:center;font-weight:800;font-size:13.5px;padding:10px 16px;}
+  .diag-banner.show{display:block;}
+
+  @media(max-width:600px){
+    .login-box{padding:30px 22px;}
+    .admin-stats{grid-template-columns:1fr 1fr;}
+    .dashboard-header{flex-direction:column;text-align:center;}
+    .pass-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<div class="site-loader" id="siteLoader"><div class="ld-spin"></div><span>بنجهزلك اللوحة...</span></div>
+<div class="diag-banner" id="diagBanner"></div>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="lb-logo">🌰</div>
+    <h2>لوحة تحكم الإدارة</h2>
+    <p class="sub">محمصة الجابري – فرع الجلاء</p>
+    <div class="field">
+      <label>اسم المستخدم</label>
+      <input type="text" id="adminUser" placeholder="اسم المستخدم">
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="adminPass" placeholder="كلمة المرور">
+    </div>
+    <div class="field-error" id="loginError">بيانات الدخول غلط، جرب تاني</div>
+    <button class="submit-btn" id="loginSubmit">دخول 🔐</button>
+    <a class="back-link" href="index.html">⬅ رجوع لموقع الطلب</a>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD PAGE ===== -->
+<div class="dashboard-page" id="dashboardPage">
+  <div class="dashboard-header">
+    <h2>📊 لوحة تحكم <span id="dashBranchName">الفرع</span></h2>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <span class="branch-badge" id="dashBranchBadge">فرع الجلاء</span>
+      <button class="hdr-btn notif-badge" id="refreshOrdersBtn">🔄 تحديث<span class="notif-dot" id="notifDot"></span></button>
+      <a class="hdr-btn" href="index.html" style="display:inline-block;">🛍️ موقع الطلب</a>
+      <button class="hdr-btn" id="logoutBtn" style="background:rgba(255,0,0,.3);">تسجيل خروج</button>
+    </div>
+  </div>
+
+  <div class="admin-stats" id="dashStats">
+    <div class="stat-box"><b id="statTotal">0</b><span>إجمالي الطلبات</span></div>
+    <div class="stat-box"><b id="statToday">0</b><span>طلبات اليوم</span></div>
+    <div class="stat-box"><b id="statPickup">0</b><span>استلام</span></div>
+    <div class="stat-box"><b id="statDelivery">0</b><span>توصيل</span></div>
+    <div class="stat-box"><b id="statRevenue">0</b><span>إجمالي المبيعات</span></div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab-btn active" data-panel="ordersPanel">📋 الطلبات</button>
+    <button class="admin-tab-btn" data-panel="productsPanel">📦 المنتجات</button>
+    <button class="admin-tab-btn" data-panel="blacklistPanel">🚫 العملاء المحظورين</button>
+    <button class="admin-tab-btn" data-panel="settingsPanel">⚙️ الإعدادات</button>
+  </div>
+
+  <div class="admin-panel active" id="ordersPanel">
+    <div id="ordersList"></div>
+  </div>
+
+  <div class="admin-panel" id="productsPanel">
+    <div class="admin-product-form">
+      <h4>➕ إضافة منتج جديد</h4>
+      <div class="form-grid">
+        <input type="text" id="newPName" placeholder="اسم المنتج">
+        <select id="newPCat">
+          <option value="mekassarat">مكسرات</option>
+          <option value="lab">لب</option>
+          <option value="choco">شوكولاتة وسناكس</option>
+        </select>
+        <select id="newPType">
+          <option value="gram">بيع بالجرام</option>
+          <option value="piece">بيع بالحبة</option>
+        </select>
+        <input type="number" id="newPPrice" placeholder="السعر (لكل 100 جم أو للحبة)">
+      </div>
+      <div class="form-grid">
+        <input type="text" id="newPImg" placeholder="رابط صورة المنتج" style="grid-column:1/-1;">
+      </div>
+      <div class="form-grid">
+        <input type="text" id="newPTag" placeholder="تاج اختياري">
+        <input type="text" id="newPDesc" placeholder="وصف قصير">
+      </div>
+      <button class="submit-btn" id="addProductBtn">إضافة المنتج</button>
+    </div>
+    <div id="adminProductsList"></div>
+  </div>
+
+  <div class="admin-panel" id="blacklistPanel">
+    <div class="blacklist-form">
+      <input type="tel" id="blPhone" placeholder="رقم هاتف العميل 01XXXXXXXXX" maxlength="11">
+      <button class="submit-btn" style="margin:0;width:auto;padding:12px 24px;" id="addBlacklistBtn">حظر الرقم</button>
+    </div>
+    <div id="blacklistList"></div>
+  </div>
+
+  <div class="admin-panel" id="settingsPanel">
+    <div class="change-pass-form">
+      <h4>🔑 تغيير كلمة المرور</h4>
+      <div class="pass-row">
+        <input type="password" id="currentPass" placeholder="كلمة المرور الحالية">
+        <input type="password" id="newPass" placeholder="كلمة المرور الجديدة">
+        <input type="password" id="confirmPass" placeholder="تأكيد كلمة المرور">
+        <button id="changePassBtn">تغيير</button>
+      </div>
+      <div id="passMsg" style="margin-top:10px;font-weight:700;display:none;"></div>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+      <h4>📋 معلومات الفرع</h4>
+      <p style="color:#8a7563;margin-top:8px;"><strong>اسم المستخدم:</strong> <span id="settingsUsername">ELGABRY1</span></p>
+      <p style="color:#8a7563;"><strong>الفرع:</strong> <span id="settingsBranch">طنطا – الجلاء – الموقف القديم</span></p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   SUPABASE CONFIG (نفس بيانات موقع الطلب)
+   ============================================================ */
+const SUPABASE_URL = 'https://nqfnonkhpjkpwwavaqxh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============================================================
+   ⚠️ إعدادات قاعدة البيانات المطلوبة (Supabase SQL Editor)
+   لازم تتشغل مرة واحدة عشان لوحة التحكم تقدر تقرا/تعدل بيانات
+   الطلبات والمنتجات والقائمة السوداء (RLS Policies):
+
+   alter table public.orders enable row level security;
+   create policy "anon select orders" on public.orders for select to anon using (true);
+
+   alter table public.blacklist enable row level security;
+   create policy "anon read blacklist" on public.blacklist for select to anon using (true);
+   create policy "anon write blacklist" on public.blacklist for insert to anon with check (true);
+   create policy "anon delete blacklist" on public.blacklist for delete to anon using (true);
+
+   alter table public.products enable row level security;
+   create policy "anon read products" on public.products for select to anon using (true);
+   create policy "anon write products" on public.products for insert to anon with check (true);
+   ============================================================ */
+
+const BRANCH = {
+  name: 'الفرع الأول',
+  address: 'طنطا – الجلاء – الموقف القديم',
+  password: '12345',
+  username: 'ELGABRY1'
+};
+
+const FALLBACK_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' fill='%23f3e6cf'/><text x='50%' y='50%' font-size='60' text-anchor='middle' dominant-baseline='middle'>🌰</text></svg>";
+
+let PRODUCTS = [];
+let isAdminLoggedIn = false;
+let lastOrderCount = 0;
+let branchPassword = BRANCH.password;
+
+function showDiagBanner(msg) {
+  const b = document.getElementById('diagBanner');
+  b.textContent = '⚠️ ' + msg;
+  b.classList.add('show');
+}
+function hideDiagBanner() { document.getElementById('diagBanner').classList.remove('show'); }
+
+/* ============================================================
+   PASSWORD (localStorage - shared across pages on same origin)
+   ============================================================ */
+function loadBranchPassword() {
+  try { const saved = localStorage.getItem('branch_password'); if (saved) branchPassword = saved; } catch(e) {}
+}
+function saveBranchPassword() {
+  try { localStorage.setItem('branch_password', branchPassword); } catch(e) {}
+}
+
+/* ============================================================
+   SUPABASE FUNCTIONS
+   ============================================================ */
+async function loadProductsFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: true });
+    if (error) { console.error('❌ خطأ في تحميل المنتجات:', error); PRODUCTS = []; return; }
+    PRODUCTS = data || [];
+  } catch (e) { console.error('❌ خطأ غير متوقع في تحميل المنتجات:', e); PRODUCTS = []; }
+}
+
+async function loadOrdersFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error('❌ خطأ في تحميل الطلبات:', error);
+      showDiagBanner('مش قادرين نجيب الطلبات من قاعدة البيانات - تحقق من صلاحيات RLS.');
+      return [];
+    }
+    hideDiagBanner();
+    return data || [];
+  } catch (e) { console.error('❌ خطأ غير متوقع في تحميل الطلبات:', e); return []; }
+}
+
+async function loadBlacklistFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient.from('blacklist').select('phone');
+    if (error) { console.error('❌ خطأ في تحميل القائمة السوداء:', error); return []; }
+    return data ? data.map(b => b.phone) : [];
+  } catch (e) { console.error('❌ خطأ غير متوقع في تحميل القائمة السوداء:', e); return []; }
+}
+
+async function addToBlacklistSupabase(phone) {
+  try { const { error } = await supabaseClient.from('blacklist').insert([{ phone }]); if (error) console.error('❌ خطأ في حظر الرقم:', error); return !error; }
+  catch (e) { console.error('❌ خطأ غير متوقع في حظر الرقم:', e); return false; }
+}
+
+async function removeFromBlacklistSupabase(phone) {
+  try { const { error } = await supabaseClient.from('blacklist').delete().eq('phone', phone); if (error) console.error('❌ خطأ في إلغاء حظر الرقم:', error); return !error; }
+  catch (e) { console.error('❌ خطأ غير متوقع في إلغاء الحظر:', e); return false; }
+}
+
+/* ============================================================
+   NOTIFICATION
+   ============================================================ */
+function playNotificationSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = 800; osc.type = 'sine'; gain.gain.value = 0.3;
+    osc.start(); setTimeout(() => osc.stop(), 300);
+    setTimeout(() => {
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.connect(gain2); gain2.connect(audioCtx.destination);
+      osc2.frequency.value = 1000; osc2.type = 'sine'; gain2.gain.value = 0.3;
+      osc2.start(); setTimeout(() => osc2.stop(), 300);
+    }, 400);
+  } catch(e) {}
+}
+
+function showOrderNotification(order) {
+  document.getElementById('notifDot').classList.add('show');
+  playNotificationSound();
+  showToast(`🔔 طلب جديد من ${order.name || 'عميل'} - ${order.total || 0} جنيه`);
+  setTimeout(() => document.getElementById('notifDot').classList.remove('show'), 10000);
+}
+
+/* ============================================================
+   LOGIN / SESSION
+   ============================================================ */
+function checkAdminSession() {
+  try {
+    const session = localStorage.getItem('admin_session');
+    if (session === 'true') { isAdminLoggedIn = true; return true; }
+  } catch (e) {}
+  isAdminLoggedIn = false;
+  return false;
+}
+
+function setAdminSession(loggedIn) {
+  isAdminLoggedIn = loggedIn;
+  try {
+    if (loggedIn) localStorage.setItem('admin_session', 'true');
+    else localStorage.removeItem('admin_session');
+  } catch(e) {}
+}
+
+document.getElementById('loginSubmit').addEventListener('click', () => {
+  const u = document.getElementById('adminUser').value.trim().toUpperCase();
+  const p = document.getElementById('adminPass').value.trim();
+
+  if (u === BRANCH.username && p === branchPassword) {
+    document.getElementById('loginError').classList.remove('show');
+    document.getElementById('adminUser').value = '';
+    document.getElementById('adminPass').value = '';
+    setAdminSession(true);
+    showDashboard();
+    return;
+  }
+  document.getElementById('loginError').classList.add('show');
+});
+
+document.getElementById('adminPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('loginSubmit').click();
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  setAdminSession(false);
+  showLogin();
+  showToast('تم تسجيل الخروج');
+});
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('dashboardPage').classList.remove('show');
+}
+
+async function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboardPage').classList.add('show');
+  document.getElementById('dashBranchName').textContent = BRANCH.name;
+  document.getElementById('settingsUsername').textContent = BRANCH.username;
+  document.getElementById('settingsBranch').textContent = BRANCH.address;
+  await loadProductsFromSupabase();
+  await loadOrders();
+  renderAdminProducts();
+  renderBlacklist();
+}
+
+document.getElementById('refreshOrdersBtn').addEventListener('click', () => { loadOrders(); showToast('🔄 بيتم التحديث...'); });
+
+/* ===================== CHANGE PASSWORD ===================== */
+document.getElementById('changePassBtn').addEventListener('click', () => {
+  const current = document.getElementById('currentPass').value.trim();
+  const newPass = document.getElementById('newPass').value.trim();
+  const confirm = document.getElementById('confirmPass').value.trim();
+  const msgEl = document.getElementById('passMsg');
+
+  if (!current || !newPass || !confirm) {
+    msgEl.style.display = 'block'; msgEl.style.color = 'var(--red)'; msgEl.textContent = 'من فضلك املأ جميع الحقول'; return;
+  }
+  if (current !== branchPassword) {
+    msgEl.style.display = 'block'; msgEl.style.color = 'var(--red)'; msgEl.textContent = 'كلمة المرور الحالية غير صحيحة'; return;
+  }
+  if (newPass !== confirm) {
+    msgEl.style.display = 'block'; msgEl.style.color = 'var(--red)'; msgEl.textContent = 'كلمة المرور الجديدة وتأكيدها غير متطابقين'; return;
+  }
+  if (newPass.length < 4) {
+    msgEl.style.display = 'block'; msgEl.style.color = 'var(--red)'; msgEl.textContent = 'كلمة المرور الجديدة يجب أن تكون 4 أحرف على الأقل'; return;
+  }
+
+  branchPassword = newPass;
+  saveBranchPassword();
+  msgEl.style.display = 'block'; msgEl.style.color = 'var(--green-wa,#25d366)'; msgEl.textContent = '✅ تم تغيير كلمة المرور بنجاح!';
+  document.getElementById('currentPass').value = '';
+  document.getElementById('newPass').value = '';
+  document.getElementById('confirmPass').value = '';
+  setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+});
+
+/* ===================== ORDERS ===================== */
+async function loadOrders() {
+  const list = document.getElementById('ordersList');
+  list.innerHTML = '<div class="empty-orders">بنحمل الطلبات...</div>';
+
+  const orders = await loadOrdersFromSupabase();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayOrders = orders.filter(o => {
+    const d = new Date(o.created_at);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() === today.getTime();
+  });
+
+  document.getElementById('statTotal').textContent = orders.length;
+  document.getElementById('statToday').textContent = todayOrders.length;
+  document.getElementById('statPickup').textContent = orders.filter(o => o.fulfillment === 'pickup').length;
+  document.getElementById('statDelivery').textContent = orders.filter(o => o.fulfillment === 'delivery').length;
+  document.getElementById('statRevenue').textContent = orders.reduce((s, o) => s + (o.total || 0), 0) + ' جنيه';
+
+  lastOrderCount = orders.length;
+
+  if (orders.length === 0) {
+    list.innerHTML = '<div class="empty-orders">لسه مفيش طلبات 🌰<br>أول ما حد يطلب هيظهرلك هنا<br><small style="color:#d0bfa5;">لو متأكد إن العميل طلب فعلاً وبرضو مش ظاهر، تأكد من صلاحيات RLS في Supabase</small></div>';
+    return;
+  }
+
+  list.innerHTML = orders.map(o => `
+    <div class="order-row">
+      <div class="or-top">
+        <b>${o.customer_name || 'عميل'} — ${o.phone || '-'}</b>
+        <span class="badge ${o.fulfillment}">${o.fulfillment === 'pickup' ? 'استلام' : 'توصيل'}</span>
+      </div>
+      <div class="or-items">${o.items ? o.items.map(it => `${it.name} (${it.unitLabel} × ${it.qty})`).join('، ') : '-'}</div>
+      <div class="or-meta">
+        <span>📍 ${o.fulfillment === 'pickup' ? 'الجلاء - طنطا' : (o.address || '-')} &nbsp;|&nbsp; 💰 ${o.total} جنيه &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
+        <button class="mini-btn" data-phone="${o.phone}">حظر العميل</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.mini-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await addToBlacklistSupabase(btn.dataset.phone);
+      showToast('اتحظر الرقم: ' + btn.dataset.phone);
+      renderBlacklist();
+    });
+  });
+}
+
+/* ===================== PRODUCTS ===================== */
+function renderAdminProducts() {
+  const list = document.getElementById('adminProductsList');
+  if (PRODUCTS.length === 0) { list.innerHTML = '<div class="empty-orders">مفيش منتجات لسه، ضيف أول منتج من الفورم فوق 👆</div>'; return; }
+  list.innerHTML = PRODUCTS.map(p => `
+    <div class="admin-plist-row">
+      <img src="${p.image || p.img}" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+      <div class="admin-plist-info">
+        <b>${p.name}</b>
+        <span>${p.category === 'mekassarat' || p.cat === 'mekassarat' ? 'مكسرات' : (p.category === 'lab' || p.cat === 'lab') ? 'لب' : 'شوكولاتة وسناكس'} — ${p.type === 'gram' ? p.price + ' ج/100جم' : p.price + ' ج/حبة'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('addProductBtn').addEventListener('click', async () => {
+  const name = document.getElementById('newPName').value.trim();
+  const cat = document.getElementById('newPCat').value;
+  const type = document.getElementById('newPType').value;
+  const price = parseFloat(document.getElementById('newPPrice').value);
+  const img = document.getElementById('newPImg').value.trim();
+  const tag = document.getElementById('newPTag').value.trim();
+  const desc = document.getElementById('newPDesc').value.trim();
+
+  if (!name || !img || !price || price <= 0) { showToast('لازم تكتب اسم وصورة وسعر صحيح'); return; }
+
+  try {
+    const { error } = await supabaseClient.from('products').insert([{ id: 'p_' + Date.now(), name, category: cat, price, image: img, type, tag, description: desc }]);
+    if (error) throw error;
+    await loadProductsFromSupabase();
+    renderAdminProducts();
+    document.getElementById('newPName').value = '';
+    document.getElementById('newPPrice').value = '';
+    document.getElementById('newPImg').value = '';
+    document.getElementById('newPTag').value = '';
+    document.getElementById('newPDesc').value = '';
+    showToast('اتضاف المنتج بنجاح ✅ - هيظهر في موقع الطلب فورًا');
+  } catch (e) { console.error('❌ خطأ في إضافة المنتج:', e); showToast('حصل خطأ في الإضافة ❌: ' + (e.message || ''), true); }
+});
+
+/* ===================== BLACKLIST ===================== */
+async function renderBlacklist() {
+  const bl = await loadBlacklistFromSupabase();
+  const list = document.getElementById('blacklistList');
+  if (bl.length === 0) { list.innerHTML = '<div class="empty-orders">مفيش عملاء محظورين 👍</div>'; return; }
+  list.innerHTML = bl.map(phone => `
+    <div class="blacklist-row">
+      <b>${phone}</b>
+      <button class="mini-btn" data-phone="${phone}">إلغاء الحظر</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.mini-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await removeFromBlacklistSupabase(btn.dataset.phone);
+      renderBlacklist();
+      showToast('اتلغى الحظر');
+    });
+  });
+}
+
+document.getElementById('addBlacklistBtn').addEventListener('click', async () => {
+  const phone = document.getElementById('blPhone').value.trim();
+  if (!/^01[0-9]{9}$/.test(phone)) { showToast('اكتب رقم صحيح يبدأ بـ 01'); return; }
+  await addToBlacklistSupabase(phone);
+  document.getElementById('blPhone').value = '';
+  renderBlacklist();
+  showToast('اتحظر الرقم');
+});
+
+/* ===================== TABS ===================== */
+document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.panel).classList.add('active');
+  });
+});
+
+/* ===================== TOAST ===================== */
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), isError ? 5000 : 3000);
+}
+
+/* ===================== INIT ===================== */
+(async function init() {
+  loadBranchPassword();
+  document.getElementById('siteLoader').classList.add('hide');
+
+  if (checkAdminSession()) {
+    await showDashboard();
+  } else {
+    showLogin();
+  }
+
+  // تحديث تلقائي كل 5 ثواني لو مسجل دخول
+  setInterval(async () => {
+    if (isAdminLoggedIn && document.getElementById('dashboardPage').classList.contains('show')) {
+      const orders = await loadOrdersFromSupabase();
+      if (orders.length > lastOrderCount) {
+        const newOnes = orders.slice(0, orders.length - lastOrderCount);
+        for (const order of newOnes) {
+          showOrderNotification({ name: order.customer_name, total: order.total });
+        }
+        await loadOrders();
+      }
+    }
+  }, 5000);
+
+  console.log('📊 لوحة تحكم محمصة الجابري - فرع الجلاء');
+  console.log('🏪 اسم المستخدم: ' + BRANCH.username);
+})();
+</script>
+</body>
+</html>
