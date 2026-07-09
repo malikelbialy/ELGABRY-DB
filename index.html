@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة تحكم - محمصة الجابري</title>
+<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 */
   :root{
     --pink:#d6336c;
     --pink-dark:#a61e4d;
@@ -33,7 +35,6 @@
   .site-loader.hide{display:none;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
-  /* ===== LOGIN SCREEN ===== */
   .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, var(--pink-dark) 0%, var(--pink) 55%, #e8597f 100%);padding:20px;}
   .login-box{background:#fff;border-radius:22px;padding:40px 32px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
   .login-box .lb-logo{width:70px;height:70px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 18px;}
@@ -50,7 +51,6 @@
   .back-link{display:block;text-align:center;margin-top:18px;color:#9c8a7a;font-size:13px;font-weight:700;}
   .back-link:hover{color:var(--pink);}
 
-  /* ===== DASHBOARD ===== */
   .dashboard-page{display:none;padding:20px;max-width:1200px;margin:0 auto;}
   .dashboard-page.show{display:block;}
   .dashboard-header{background:var(--pink-dark);padding:20px 30px;border-radius:16px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:24px;}
@@ -166,6 +166,7 @@
 </style>
 </head>
 <body>
+<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
 
 <div class="site-loader" id="siteLoader"><div class="ld-spin"></div><span>بنجهزلك اللوحة...</span></div>
 <div class="diag-banner" id="diagBanner"></div>
@@ -191,6 +192,7 @@
 </div>
 
 <!-- ===== DASHBOARD PAGE ===== -->
+<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
 <div class="dashboard-page" id="dashboardPage">
   <div class="dashboard-header">
     <h2>📊 لوحة تحكم <span id="dashBranchName">الفرع</span></h2>
@@ -223,17 +225,21 @@
   </div>
 
   <div class="admin-panel" id="productsPanel">
+    <!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
     <div class="admin-product-form">
       <h4>➕ إضافة منتج جديد</h4>
       <div class="form-grid">
         <input type="text" id="newPName" placeholder="اسم المنتج">
         <select id="newPCat">
           <option value="mekassarat">مكسرات</option>
-          <option value="lab">لب</option>
+          <option value="lab">لب وتسالي</option>
+          <option value="mojaffafat">فواكه مجففة</option>
           <option value="choco">شوكولاتة وسناكس</option>
+          <option value="mashroobat">مشروبات وقهوة</option>
+          <option value="halawiyat">حلويات بلدي</option>
         </select>
         <select id="newPType">
-          <option value="gram">بيع بالجرام</option>
+          <option value="gram">بيع بالجرام (يبدأ من ربع كيلو)</option>
           <option value="piece">بيع بالحبة</option>
         </select>
         <input type="number" id="newPPrice" placeholder="السعر (لكل 100 جم أو للحبة)">
@@ -247,7 +253,7 @@
       </div>
       <button class="submit-btn" id="addProductBtn">إضافة المنتج</button>
     </div>
-    <p style="color:#9c8a7a;font-size:12.5px;margin-bottom:10px;">💡 اسحب المنتج من أيقونة ☰ عشان ترتبه، دوس "تعديل" أو "حذف" أو "إخفاء" من كل منتج</p>
+    <p style="color:#9c8a7a;font-size:12.5px;margin-bottom:10px;">💡 المنتجات اللي بالجرام بتتباع بدايةً من ربع كيلو (250 جم). اسحب المنتج من أيقونة ☰ عشان ترتبه، دوس "تعديل" أو "حذف" أو "إخفاء" من كل منتج</p>
     <div id="adminProductsList"></div>
   </div>
 
@@ -290,7 +296,7 @@
     <div class="cleanup-box">
       <h4>🗑️ مسح الطلبات القديمة</h4>
       <p>
-        الطلبات بتتمسح تلقائيًا لما عمرها يعدي 12 ساعة، بس المسح ده بيحصل بس لما حد يفتح موقع الطلب أو لوحة التحكم (مش فيه سيرفر شغال طول الوقت في الخلفية).
+        الطلبات بتتمسح تلقائيًا لما عمرها يعدي 12 ساعة، بس المسح ده بيحصل بس لما حد يفتح موقع الطلب أو لوحة التحكم.
         لو عايز مسح فوري دلوقتي، دوس الزرار ده.
       </p>
       <button class="cleanup-btn" id="manualCleanupBtn">امسح الطلبات الأقدم من 12 ساعة الآن</button>
@@ -300,6 +306,7 @@
       <h4>📋 معلومات الفرع</h4>
       <p style="color:#8a7563;margin-top:8px;"><strong>اسم المستخدم:</strong> <span id="settingsUsername">ELGABRY1</span></p>
       <p style="color:#8a7563;"><strong>الفرع:</strong> <span id="settingsBranch">طنطا – الجلاء – الموقف القديم</span></p>
+      <p style="color:#cdb89c;margin-top:14px;font-size:11.5px;">Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286</p>
     </div>
   </div>
 </div>
@@ -314,14 +321,17 @@
       <label>القسم</label>
       <select id="editPCat">
         <option value="mekassarat">مكسرات</option>
-        <option value="lab">لب</option>
+        <option value="lab">لب وتسالي</option>
+        <option value="mojaffafat">فواكه مجففة</option>
         <option value="choco">شوكولاتة وسناكس</option>
+        <option value="mashroobat">مشروبات وقهوة</option>
+        <option value="halawiyat">حلويات بلدي</option>
       </select>
     </div>
     <div class="field">
       <label>نوع البيع</label>
       <select id="editPType">
-        <option value="gram">بيع بالجرام</option>
+        <option value="gram">بيع بالجرام (يبدأ من ربع كيلو)</option>
         <option value="piece">بيع بالحبة</option>
       </select>
     </div>
@@ -337,64 +347,12 @@
 
 <script>
 /* ============================================================
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
    SUPABASE CONFIG (نفس بيانات موقع الطلب)
    ============================================================ */
 const SUPABASE_URL = 'https://nqfnonkhpjkpwwavaqxh.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-/* ============================================================
-   ⚠️ إعدادات قاعدة البيانات المطلوبة (Supabase SQL Editor)
-   شغّل الأوامر دي مرة واحدة عشان كل الميزات الجديدة تشتغل:
-
-   -- الطلبات: حالة + كوبون + تقييم
-   alter table public.orders add column if not exists status text default 'قيد التحضير';
-   alter table public.orders add column if not exists coupon_code text;
-   alter table public.orders add column if not exists discount numeric default 0;
-   alter table public.orders add column if not exists rating int;
-   alter table public.orders add column if not exists rating_comment text;
-   alter table public.orders enable row level security;
-   create policy "anon insert orders" on public.orders for insert to anon with check (true);
-   create policy "anon select orders" on public.orders for select to anon using (true);
-   create policy "anon update orders" on public.orders for update to anon using (true) with check (true);
-   create policy "anon delete orders" on public.orders for delete to anon using (true);
-
-   -- المنتجات: إخفاء + ترتيب
-   alter table public.products add column if not exists hidden boolean default false;
-   alter table public.products add column if not exists sort_order integer default 0;
-   alter table public.products enable row level security;
-   create policy "anon read products" on public.products for select to anon using (true);
-   create policy "anon write products" on public.products for insert to anon with check (true);
-   create policy "anon update products" on public.products for update to anon using (true) with check (true);
-   create policy "anon delete products" on public.products for delete to anon using (true);
-
-   -- الكوبونات (جدول جديد)
-   create table if not exists public.coupons (
-     id text primary key,
-     code text unique not null,
-     type text not null default 'percent',
-     value numeric not null,
-     active boolean default true,
-     created_at timestamptz default now()
-   );
-   alter table public.coupons enable row level security;
-   create policy "anon read coupons" on public.coupons for select to anon using (true);
-   create policy "anon write coupons" on public.coupons for insert to anon with check (true);
-   create policy "anon update coupons" on public.coupons for update to anon using (true) with check (true);
-   create policy "anon delete coupons" on public.coupons for delete to anon using (true);
-
-   -- القائمة السوداء
-   alter table public.blacklist enable row level security;
-   create policy "anon read blacklist" on public.blacklist for select to anon using (true);
-   create policy "anon write blacklist" on public.blacklist for insert to anon with check (true);
-   create policy "anon delete blacklist" on public.blacklist for delete to anon using (true);
-
-   -- (اختياري لكن مثالي) مسح تلقائي حقيقي كل 12 ساعة حتى لو محدش
-   -- فاتح الموقع: فعّل إضافة pg_cron من Database > Extensions في
-   -- Supabase، وبعدين شوف رسالتي بعد الكود لأمر الـ cron الكامل
-   -- (متسبوش أي علامة نجمة وشرطة مائلة جوه كومنتات الجافاسكريبت،
-   -- عشان كده حطيناه برا الكود هنا)
-   ============================================================ */
 
 const BRANCH = {
   name: 'الفرع الأول',
@@ -406,6 +364,7 @@ const BRANCH = {
 const FALLBACK_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' fill='%23f3e6cf'/><text x='50%' y='50%' font-size='60' text-anchor='middle' dominant-baseline='middle'>🌰</text></svg>";
 const STATUS_LIST = ['قيد التحضير', 'جاهز', 'تم التسليم'];
 const STATUS_KEY = { 'قيد التحضير': 'st-prep', 'جاهز': 'st-ready', 'تم التسليم': 'st-done' };
+const CAT_LABELS = { mekassarat: 'مكسرات', lab: 'لب وتسالي', mojaffafat: 'فواكه مجففة', choco: 'شوكولاتة وسناكس', mashroobat: 'مشروبات وقهوة', halawiyat: 'حلويات بلدي' };
 
 let PRODUCTS = [];
 let isAdminLoggedIn = false;
@@ -432,6 +391,7 @@ function saveBranchPassword() {
 
 /* ============================================================
    SUPABASE: PRODUCTS
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
    ============================================================ */
 async function loadProductsFromSupabase() {
   try {
@@ -466,14 +426,14 @@ async function updateOrderStatus(orderId, status) {
 }
 
 /* ============================================================
-   AUTO-CLEANUP: مسح الطلبات الأقدم من 12 ساعة (best-effort)
+   AUTO-CLEANUP: مسح الطلبات الأقدم من 12 ساعة
    ============================================================ */
 async function cleanupOldOrders() {
   try {
     const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
     const { error } = await supabaseClient.from('orders').delete().lt('created_at', cutoff);
     if (error) {
-      console.error('❌ خطأ في مسح الطلبات القديمة (على الأغلب لازم تشغّل أوامر الـ SQL فوق):', error.message || error);
+      console.error('❌ خطأ في مسح الطلبات القديمة:', error.message || error);
       return { success: false, message: error.message || 'خطأ غير معروف' };
     }
     return { success: true };
@@ -660,7 +620,7 @@ async function loadOrders() {
   lastOrderCount = orders.length;
 
   if (orders.length === 0) {
-    list.innerHTML = '<div class="empty-orders">لسه مفيش طلبات 🌰<br>أول ما حد يطلب هيظهرلك هنا<br><small style="color:#d0bfa5;">لو متأكد إن العميل طلب فعلاً وبرضو مش ظاهر، تأكد من صلاحيات RLS في Supabase</small></div>';
+    list.innerHTML = '<div class="empty-orders">لسه مفيش طلبات 🌰<br>أول ما حد يطلب هيظهرلك هنا</div>';
     return;
   }
 
@@ -721,7 +681,7 @@ function renderAdminProducts() {
       <img src="${p.image || p.img}" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
       <div class="admin-plist-info">
         <b>${p.name} ${p.hidden ? '(مخفي)' : ''}</b>
-        <span>${p.category === 'mekassarat' || p.cat === 'mekassarat' ? 'مكسرات' : (p.category === 'lab' || p.cat === 'lab') ? 'لب' : 'شوكولاتة وسناكس'} — ${p.type === 'gram' ? p.price + ' ج/100جم' : p.price + ' ج/حبة'}</span>
+        <span>${CAT_LABELS[p.category || p.cat] || 'أخرى'} — ${p.type === 'gram' ? p.price + ' ج/100جم' : p.price + ' ج/حبة'}</span>
       </div>
       <div class="prod-actions">
         <button class="act-edit" data-edit="${p.id}">تعديل</button>
@@ -731,12 +691,10 @@ function renderAdminProducts() {
     </div>
   `).join('');
 
-  // Edit
   list.querySelectorAll('[data-edit]').forEach(btn => {
     btn.addEventListener('click', () => openEditModal(btn.dataset.edit));
   });
 
-  // Hide/show
   list.querySelectorAll('[data-hide]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.hide;
@@ -752,7 +710,6 @@ function renderAdminProducts() {
     });
   });
 
-  // Delete
   list.querySelectorAll('[data-del]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.del;
@@ -768,7 +725,6 @@ function renderAdminProducts() {
     });
   });
 
-  // Drag & drop reorder
   const rows = list.querySelectorAll('.admin-plist-row');
   rows.forEach(row => {
     row.addEventListener('dragstart', () => { draggedId = row.dataset.id; row.classList.add('dragging'); });
@@ -784,7 +740,6 @@ function renderAdminProducts() {
       const [moved] = PRODUCTS.splice(fromIdx, 1);
       PRODUCTS.splice(toIdx, 0, moved);
       renderAdminProducts();
-      // Persist new sort_order for all products
       try {
         await Promise.all(PRODUCTS.map((p, i) => supabaseClient.from('products').update({ sort_order: i }).eq('id', p.id)));
         showToast('✅ اتحفظ الترتيب الجديد');
@@ -987,18 +942,14 @@ function showToast(msg, isError) {
   setTimeout(() => t.classList.remove('show'), isError ? 5000 : 3000);
 }
 
-/* ===================== INIT ===================== */
+/* ===================== INIT =====================
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   ================================================== */
 (async function init() {
-  // شبكة أمان: مهما حصل أي خطأ جوه أي جزء، شاشة التحميل لازم تختفي
-  // وتوري إما لوحة التحكم أو شاشة الدخول - عشان الصفحة متفضلش عالقة
   try {
     loadBranchPassword();
-
-    if (checkAdminSession()) {
-      await showDashboard();
-    } else {
-      showLogin();
-    }
+    if (checkAdminSession()) { await showDashboard(); }
+    else { showLogin(); }
   } catch (e) {
     console.error('❌ خطأ غير متوقع أثناء تحميل الصفحة:', e && e.message ? e.message : e);
     showLogin();
@@ -1007,9 +958,8 @@ function showToast(msg, isError) {
   }
 
   cleanupOldOrders();
-  setInterval(cleanupOldOrders, 15 * 60 * 1000); // كل 15 دقيقة لو الداشبورد فاضلة مفتوحة
+  setInterval(cleanupOldOrders, 15 * 60 * 1000);
 
-  // تحديث تلقائي كل 5 ثواني لو مسجل دخول
   setInterval(async () => {
     if (isAdminLoggedIn && document.getElementById('dashboardPage').classList.contains('show')) {
       const orders = await loadOrdersFromSupabase();
@@ -1025,6 +975,7 @@ function showToast(msg, isError) {
 
   console.log('📊 لوحة تحكم محمصة الجابري - فرع الجلاء');
   console.log('🏪 اسم المستخدم: ' + BRANCH.username);
+  console.log('👨‍💻 Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286');
 })();
 </script>
 </body>
