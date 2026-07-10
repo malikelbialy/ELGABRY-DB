@@ -205,11 +205,13 @@
   </div>
 
   <div class="admin-stats" id="dashStats">
-    <div class="stat-box"><b id="statTotal">0</b><span>إجمالي الطلبات</span></div>
+    <div class="stat-box" style="border:2px solid var(--gold);"><b id="statLifetimeOrders">0</b><span>إجمالي الطلبات (من الأول - ثابت للأبد) 🔒</span></div>
+    <div class="stat-box" style="border:2px solid var(--gold);"><b id="statLifetimeRevenue">0</b><span>إجمالي المبيعات (من الأول - ثابت للأبد) 🔒</span></div>
+    <div class="stat-box"><b id="statTotal">0</b><span>طلبات مسجلة حاليًا</span></div>
     <div class="stat-box"><b id="statToday">0</b><span>طلبات اليوم</span></div>
     <div class="stat-box"><b id="statPickup">0</b><span>استلام</span></div>
     <div class="stat-box"><b id="statDelivery">0</b><span>توصيل</span></div>
-    <div class="stat-box"><b id="statRevenue">0</b><span>إجمالي المبيعات</span></div>
+    <div class="stat-box"><b id="statRevenue">0</b><span>مبيعات الطلبات المسجلة حاليًا</span></div>
   </div>
 
   <div class="admin-tabs">
@@ -294,6 +296,18 @@
     </div>
 
     <div class="cleanup-box">
+      <h4>📥 تصدير طلبات الشهر لإكسل</h4>
+      <p>
+        بيحمّل ملف إكسل (CSV) فيه كل طلبات الشهر المختار، بكل تفاصيلها (الاسم، الهاتف، المنتجات، الإجمالي، الحالة).
+        كويس تعمله كل شهر عشان يبقى عندك سجل دائم حتى لو الطلبات القديمة اتمسحت من قاعدة البيانات.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <input type="month" id="exportMonthInput" style="padding:10px 14px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-size:14px;background:#fffdf7;">
+        <button class="submit-btn" id="exportMonthBtn" style="width:auto;margin:0;padding:10px 20px;">تصدير الشهر ده لإكسل 📊</button>
+      </div>
+    </div>
+
+    <div class="cleanup-box">
       <h4>🗑️ مسح الطلبات القديمة</h4>
       <p>
         الطلبات بتتمسح تلقائيًا لما عمرها يعدي 12 ساعة، بس المسح ده بيحصل بس لما حد يفتح موقع الطلب أو لوحة التحكم.
@@ -361,6 +375,46 @@
    ============================================================ */
 const SUPABASE_URL = 'https://nqfnonkhpjkpwwavaqxh.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
+
+/* ============================================================
+   ⚠️ إعداد قاعدة بيانات مطلوب (مرة واحدة بس) عشان "إجمالي الطلبات
+   من الأول" يفضل ثابت للأبد حتى لو الطلبات القديمة اتمسحت أو
+   عملت "امسح كل الطلبات والفلوس" — شغّل الأوامر دي في
+   Supabase → SQL Editor:
+
+   create table if not exists public.stats (
+     id text primary key,
+     total_orders bigint default 0,
+     total_revenue numeric default 0
+   );
+   insert into public.stats (id, total_orders, total_revenue)
+     values ('global', 0, 0) on conflict (id) do nothing;
+
+   alter table public.stats enable row level security;
+   create policy "anon read stats" on public.stats for select to anon using (true);
+   create policy "anon update stats" on public.stats for update to anon using (true) with check (true);
+
+   create or replace function public.increment_stats() returns trigger as $$
+   begin
+     update public.stats
+     set total_orders = total_orders + 1,
+         total_revenue = total_revenue + coalesce(new.total, 0)
+     where id = 'global';
+     return new;
+   end;
+   $$ language plpgsql security definer;
+
+   drop trigger if exists trg_increment_stats on public.orders;
+   create trigger trg_increment_stats
+   after insert on public.orders
+   for each row execute function public.increment_stats();
+
+   الترجر ده شغال جوه قاعدة البيانات نفسها، فأي طلب جديد بيزود
+   الرقم فورًا وقت ما بيتسجل، ومفيش أي زرار مسح (لا اليدوي ولا
+   التلقائي كل 12 ساعة ولا "امسح كل الطلبات") بيقدر يأثر عليه
+   لأنه في جدول تاني منفصل تمامًا عن جدول orders.
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   ============================================================ */
 let supabaseClient = null;
 function getSupabase() {
   if (supabaseClient) return supabaseClient;
@@ -416,6 +470,24 @@ async function loadProductsFromSupabase() {
     if (error) { console.error('❌ خطأ في تحميل المنتجات:', error); PRODUCTS = []; return; }
     PRODUCTS = data || [];
   } catch (e) { console.error('❌ خطأ غير متوقع في تحميل المنتجات:', e); PRODUCTS = []; }
+}
+
+/* ============================================================
+   SUPABASE: LIFETIME STATS (لا تتأثر بأي عملية مسح)
+   ============================================================ */
+async function loadLifetimeStats() {
+  try {
+    const { data, error } = await getSupabase().from('stats').select('*').eq('id', 'global').maybeSingle();
+    if (error || !data) {
+      document.getElementById('statLifetimeOrders').textContent = '—';
+      document.getElementById('statLifetimeRevenue').textContent = 'محتاج إعداد SQL';
+      return;
+    }
+    document.getElementById('statLifetimeOrders').textContent = data.total_orders || 0;
+    document.getElementById('statLifetimeRevenue').textContent = (data.total_revenue || 0) + ' جنيه';
+  } catch (e) {
+    console.error('❌ خطأ في تحميل الإحصائيات الدائمة:', e);
+  }
 }
 
 /* ============================================================
@@ -564,12 +636,13 @@ async function showDashboard() {
   document.getElementById('settingsBranch').textContent = BRANCH.address;
   await loadProductsFromSupabase();
   await loadOrders();
+  loadLifetimeStats();
   renderAdminProducts();
   renderBlacklist();
   renderCoupons();
 }
 
-document.getElementById('refreshOrdersBtn').addEventListener('click', () => { loadOrders(); showToast('🔄 بيتم التحديث...'); });
+document.getElementById('refreshOrdersBtn').addEventListener('click', () => { loadOrders(); loadLifetimeStats(); showToast('🔄 بيتم التحديث...'); });
 
 /* ===================== CHANGE PASSWORD ===================== */
 document.getElementById('changePassBtn').addEventListener('click', () => {
@@ -601,6 +674,84 @@ document.getElementById('changePassBtn').addEventListener('click', () => {
 });
 
 /* ===================== MANUAL CLEANUP ===================== */
+/* ===================== MONTHLY EXCEL EXPORT =====================
+   بيولّد ملف CSV (بيفتح في إكسل عادي) لطلبات الشهر المختار، بدون أي
+   مكتبة خارجية أو اتصال بالنت - عشان يفضل شغال حتى لو النت وقع
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   ==================================================================== */
+(function initExportMonthInput() {
+  const input = document.getElementById('exportMonthInput');
+  if (input) {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    input.value = `${yyyy}-${mm}`;
+  }
+})();
+
+function csvEscape(val) {
+  const s = (val === null || val === undefined) ? '' : String(val);
+  if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+document.getElementById('exportMonthBtn').addEventListener('click', async () => {
+  const monthVal = document.getElementById('exportMonthInput').value;
+  if (!monthVal) { showToast('اختار الشهر الأول'); return; }
+  const [yStr, mStr] = monthVal.split('-');
+  const year = parseInt(yStr), month = parseInt(mStr);
+
+  const btn = document.getElementById('exportMonthBtn');
+  btn.textContent = 'جاري التجهيز...';
+  try {
+    const orders = await loadOrdersFromSupabase();
+    const filtered = orders.filter(o => {
+      const d = new Date(o.created_at);
+      return d.getFullYear() === year && (d.getMonth() + 1) === month;
+    });
+
+    if (filtered.length === 0) {
+      showToast('مفيش طلبات في الشهر ده');
+      btn.textContent = 'تصدير الشهر ده لإكسل 📊';
+      return;
+    }
+
+    const headers = ['التاريخ', 'الاسم', 'الهاتف', 'نوع الاستلام', 'العنوان', 'المنتجات', 'الإجمالي', 'الخصم', 'الكوبون', 'الحالة', 'التقييم'];
+    const rows = filtered.map(o => [
+      new Date(o.created_at).toLocaleString('ar-EG'),
+      o.customer_name || '',
+      o.phone || '',
+      o.fulfillment === 'pickup' ? 'استلام' : 'توصيل',
+      o.address || '',
+      o.items ? o.items.map(it => `${it.name} (${it.unitLabel} × ${it.qty})`).join(' | ') : '',
+      o.total || 0,
+      o.discount || 0,
+      o.coupon_code || '',
+      o.status || 'قيد التحضير',
+      o.rating || ''
+    ]);
+
+    const csvLines = [headers, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
+    const csvContent = '\uFEFF' + csvLines; // BOM عشان العربي يتظبط في إكسل
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `طلبات-${monthVal}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast(`✅ اتحمّل ملف فيه ${filtered.length} طلب لشهر ${monthVal}`);
+  } catch (e) {
+    showToast('❌ حصل خطأ في التصدير: ' + (e.message || ''), true);
+  } finally {
+    btn.textContent = 'تصدير الشهر ده لإكسل 📊';
+  }
+});
+
 document.getElementById('manualCleanupBtn').addEventListener('click', async () => {
   const btn = document.getElementById('manualCleanupBtn');
   btn.textContent = 'جاري المسح...';
@@ -1014,6 +1165,7 @@ function showToast(msg, isError) {
           showOrderNotification({ name: order.customer_name, total: order.total });
         }
         await loadOrders();
+        loadLifetimeStats();
       }
     }
   }, 5000);
