@@ -352,7 +352,15 @@
    ============================================================ */
 const SUPABASE_URL = 'https://nqfnonkhpjkpwwavaqxh.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient = null;
+function getSupabase() {
+  if (supabaseClient) return supabaseClient;
+  if (window.supabase && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return supabaseClient;
+  }
+  throw new Error('مكتبة Supabase مش شغالة (مشكلة في تحميل السكريبت)');
+}
 
 const BRANCH = {
   name: 'الفرع الأول',
@@ -395,7 +403,7 @@ function saveBranchPassword() {
    ============================================================ */
 async function loadProductsFromSupabase() {
   try {
-    const { data, error } = await supabaseClient.from('products').select('*').order('sort_order', { ascending: true });
+    const { data, error } = await getSupabase().from('products').select('*').order('sort_order', { ascending: true });
     if (error) { console.error('❌ خطأ في تحميل المنتجات:', error); PRODUCTS = []; return; }
     PRODUCTS = data || [];
   } catch (e) { console.error('❌ خطأ غير متوقع في تحميل المنتجات:', e); PRODUCTS = []; }
@@ -406,7 +414,7 @@ async function loadProductsFromSupabase() {
    ============================================================ */
 async function loadOrdersFromSupabase() {
   try {
-    const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+    const { data, error } = await getSupabase().from('orders').select('*').order('created_at', { ascending: false });
     if (error) {
       console.error('❌ خطأ في تحميل الطلبات:', error);
       showDiagBanner('مش قادرين نجيب الطلبات من قاعدة البيانات - تحقق من صلاحيات RLS.');
@@ -419,7 +427,7 @@ async function loadOrdersFromSupabase() {
 
 async function updateOrderStatus(orderId, status) {
   try {
-    const { error } = await supabaseClient.from('orders').update({ status }).eq('id', orderId);
+    const { error } = await getSupabase().from('orders').update({ status }).eq('id', orderId);
     if (error) { console.error('❌ خطأ في تحديث حالة الطلب:', error); return false; }
     return true;
   } catch (e) { console.error('❌ خطأ غير متوقع:', e); return false; }
@@ -431,7 +439,7 @@ async function updateOrderStatus(orderId, status) {
 async function cleanupOldOrders() {
   try {
     const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
-    const { error } = await supabaseClient.from('orders').delete().lt('created_at', cutoff);
+    const { error } = await getSupabase().from('orders').delete().lt('created_at', cutoff);
     if (error) {
       console.error('❌ خطأ في مسح الطلبات القديمة:', error.message || error);
       return { success: false, message: error.message || 'خطأ غير معروف' };
@@ -445,19 +453,19 @@ async function cleanupOldOrders() {
 
 async function loadBlacklistFromSupabase() {
   try {
-    const { data, error } = await supabaseClient.from('blacklist').select('phone');
+    const { data, error } = await getSupabase().from('blacklist').select('phone');
     if (error) { console.error('❌ خطأ في تحميل القائمة السوداء:', error); return []; }
     return data ? data.map(b => b.phone) : [];
   } catch (e) { console.error('❌ خطأ غير متوقع في تحميل القائمة السوداء:', e); return []; }
 }
 
 async function addToBlacklistSupabase(phone) {
-  try { const { error } = await supabaseClient.from('blacklist').insert([{ phone }]); if (error) console.error('❌ خطأ في حظر الرقم:', error); return !error; }
+  try { const { error } = await getSupabase().from('blacklist').insert([{ phone }]); if (error) console.error('❌ خطأ في حظر الرقم:', error); return !error; }
   catch (e) { console.error('❌ خطأ غير متوقع في حظر الرقم:', e); return false; }
 }
 
 async function removeFromBlacklistSupabase(phone) {
-  try { const { error } = await supabaseClient.from('blacklist').delete().eq('phone', phone); if (error) console.error('❌ خطأ في إلغاء حظر الرقم:', error); return !error; }
+  try { const { error } = await getSupabase().from('blacklist').delete().eq('phone', phone); if (error) console.error('❌ خطأ في إلغاء حظر الرقم:', error); return !error; }
   catch (e) { console.error('❌ خطأ غير متوقع في إلغاء الحظر:', e); return false; }
 }
 
@@ -629,6 +637,10 @@ async function loadOrders() {
     const statusClass = STATUS_KEY[status] || 'st-prep';
     const ratingHtml = o.rating ? `<div class="rating-line">⭐ تقييم العميل: ${'⭐'.repeat(o.rating)} ${o.rating_comment ? '— "' + o.rating_comment + '"' : ''}</div>` : '';
     const discountHtml = o.discount > 0 ? ` (خصم ${o.discount} ج${o.coupon_code ? ' - ' + o.coupon_code : ''})` : '';
+    const rawAddress = o.address || '';
+    const mapsMatch = rawAddress.match(/https:\/\/www\.google\.com\/maps\?q=[^\s]+/);
+    const addressText = rawAddress.replace(/📍 موقعي على الخريطة:\s*https:\/\/www\.google\.com\/maps\?q=[^\s]+/, '').trim();
+    const mapsLinkHtml = mapsMatch ? ` <a href="${mapsMatch[0]}" target="_blank" style="background:var(--green-wa);color:#fff;padding:3px 10px;border-radius:10px;font-size:11.5px;font-weight:800;">📍 افتح الموقع على الخريطة</a>` : '';
     return `
     <div class="order-row">
       <div class="or-top">
@@ -637,7 +649,7 @@ async function loadOrders() {
       </div>
       <div class="or-items">${o.items ? o.items.map(it => `${it.name} (${it.unitLabel} × ${it.qty})`).join('، ') : '-'}</div>
       <div class="or-meta">
-        <span>📍 ${o.fulfillment === 'pickup' ? 'الجلاء - طنطا' : (o.address || '-')} &nbsp;|&nbsp; 💰 ${o.total} جنيه${discountHtml} &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
+        <span>📍 ${o.fulfillment === 'pickup' ? 'الجلاء - طنطا' : (addressText || '-')}${mapsLinkHtml} &nbsp;|&nbsp; 💰 ${o.total} جنيه${discountHtml} &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
       </div>
       ${ratingHtml}
       <div class="or-actions">
@@ -678,7 +690,7 @@ function renderAdminProducts() {
   list.innerHTML = PRODUCTS.map(p => `
     <div class="admin-plist-row ${p.hidden ? 'hidden-prod' : ''}" draggable="true" data-id="${p.id}">
       <span class="drag-handle">☰</span>
-      <img src="${p.image || p.img}" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+      <img src="${p.image || p.img}" onerror="this.onerror=null;this.src=FALLBACK_IMG">
       <div class="admin-plist-info">
         <b>${p.name} ${p.hidden ? '(مخفي)' : ''}</b>
         <span>${CAT_LABELS[p.category || p.cat] || 'أخرى'} — ${p.type === 'gram' ? p.price + ' ج/100جم' : p.price + ' ج/حبة'}</span>
@@ -701,7 +713,7 @@ function renderAdminProducts() {
       const prod = PRODUCTS.find(p => p.id === id);
       const newHidden = !prod.hidden;
       try {
-        const { error } = await supabaseClient.from('products').update({ hidden: newHidden }).eq('id', id);
+        const { error } = await getSupabase().from('products').update({ hidden: newHidden }).eq('id', id);
         if (error) throw error;
         prod.hidden = newHidden;
         renderAdminProducts();
@@ -716,7 +728,7 @@ function renderAdminProducts() {
       const prod = PRODUCTS.find(p => p.id === id);
       if (!confirm(`متأكد إنك عايز تحذف "${prod.name}"؟ الحذف نهائي.`)) return;
       try {
-        const { error } = await supabaseClient.from('products').delete().eq('id', id);
+        const { error } = await getSupabase().from('products').delete().eq('id', id);
         if (error) throw error;
         PRODUCTS = PRODUCTS.filter(p => p.id !== id);
         renderAdminProducts();
@@ -741,7 +753,7 @@ function renderAdminProducts() {
       PRODUCTS.splice(toIdx, 0, moved);
       renderAdminProducts();
       try {
-        await Promise.all(PRODUCTS.map((p, i) => supabaseClient.from('products').update({ sort_order: i }).eq('id', p.id)));
+        await Promise.all(PRODUCTS.map((p, i) => getSupabase().from('products').update({ sort_order: i }).eq('id', p.id)));
         showToast('✅ اتحفظ الترتيب الجديد');
       } catch (err) { showToast('حصل خطأ في حفظ الترتيب', true); }
     });
@@ -761,7 +773,7 @@ document.getElementById('addProductBtn').addEventListener('click', async () => {
 
   try {
     const nextSort = PRODUCTS.length;
-    const { error } = await supabaseClient.from('products').insert([{ id: 'p_' + Date.now(), name, category: cat, price, image: img, type, tag, description: desc, sort_order: nextSort, hidden: false }]);
+    const { error } = await getSupabase().from('products').insert([{ id: 'p_' + Date.now(), name, category: cat, price, image: img, type, tag, description: desc, sort_order: nextSort, hidden: false }]);
     if (error) throw error;
     await loadProductsFromSupabase();
     renderAdminProducts();
@@ -803,7 +815,7 @@ document.getElementById('saveEditBtn').addEventListener('click', async () => {
   if (!name || !image || !price || price <= 0) { showToast('لازم تكتب اسم وصورة وسعر صحيح'); return; }
 
   try {
-    const { error } = await supabaseClient.from('products').update({ name, category, type, price, image, tag, description }).eq('id', editingId);
+    const { error } = await getSupabase().from('products').update({ name, category, type, price, image, tag, description }).eq('id', editingId);
     if (error) throw error;
     await loadProductsFromSupabase();
     renderAdminProducts();
@@ -824,7 +836,7 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
 /* ===================== COUPONS ===================== */
 async function loadCouponsFromSupabase() {
   try {
-    const { data, error } = await supabaseClient.from('coupons').select('*').order('created_at', { ascending: false });
+    const { data, error } = await getSupabase().from('coupons').select('*').order('created_at', { ascending: false });
     if (error) { console.error('❌ خطأ في تحميل الكوبونات:', error); return []; }
     return data || [];
   } catch (e) { console.error('❌ خطأ غير متوقع:', e); return []; }
@@ -852,7 +864,7 @@ async function renderCoupons() {
     btn.addEventListener('click', async () => {
       const c = coupons.find(x => x.id === btn.dataset.toggle);
       try {
-        const { error } = await supabaseClient.from('coupons').update({ active: !c.active }).eq('id', c.id);
+        const { error } = await getSupabase().from('coupons').update({ active: !c.active }).eq('id', c.id);
         if (error) throw error;
         renderCoupons();
         showToast('✅ اتحدث حال الكوبون');
@@ -864,7 +876,7 @@ async function renderCoupons() {
     btn.addEventListener('click', async () => {
       if (!confirm('متأكد إنك عايز تحذف الكوبون؟')) return;
       try {
-        const { error } = await supabaseClient.from('coupons').delete().eq('id', btn.dataset.delc);
+        const { error } = await getSupabase().from('coupons').delete().eq('id', btn.dataset.delc);
         if (error) throw error;
         renderCoupons();
         showToast('🗑️ اتحذف الكوبون');
@@ -882,7 +894,7 @@ document.getElementById('addCouponBtn').addEventListener('click', async () => {
   if (type === 'percent' && value > 100) { showToast('النسبة المئوية لازم تكون 100 أو أقل'); return; }
 
   try {
-    const { error } = await supabaseClient.from('coupons').insert([{ id: 'c_' + Date.now(), code, type, value, active: true }]);
+    const { error } = await getSupabase().from('coupons').insert([{ id: 'c_' + Date.now(), code, type, value, active: true }]);
     if (error) throw error;
     document.getElementById('newCCode').value = '';
     document.getElementById('newCValue').value = '';
