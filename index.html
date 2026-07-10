@@ -84,6 +84,7 @@
   .status-select{padding:7px 12px;border-radius:10px;border:1.5px solid #e9d8b9;font-family:inherit;font-weight:800;font-size:12.5px;background:#fffdf7;cursor:pointer;}
   .status-select.st-prep{color:#a67c00;}
   .status-select.st-ready{color:var(--blue);}
+  .status-select.st-onway{color:#8e44ad;}
   .status-select.st-done{color:#2c7a3d;}
   .mini-btn{font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:12px;background:#fdeaea;color:var(--red);border:none;cursor:pointer;}
   .mini-btn:hover{background:var(--red);color:#fff;}
@@ -198,6 +199,7 @@
     <h2>📊 لوحة تحكم <span id="dashBranchName">الفرع</span></h2>
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
       <span class="branch-badge" id="dashBranchBadge">فرع الجلاء</span>
+      <button class="hdr-btn" id="storeToggleBtn" style="background:rgba(255,255,255,.2);">⏸️ إيقاف استقبال الطلبات</button>
       <button class="hdr-btn notif-badge" id="refreshOrdersBtn">🔄 تحديث<span class="notif-dot" id="notifDot"></span></button>
       <a class="hdr-btn" href="index.html" style="display:inline-block;">🛍️ موقع الطلب</a>
       <button class="hdr-btn" id="logoutBtn" style="background:rgba(255,0,0,.3);">تسجيل خروج</button>
@@ -415,6 +417,47 @@ const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
    لأنه في جدول تاني منفصل تمامًا عن جدول orders.
    Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
    ============================================================ */
+
+/* ============================================================
+   ⚠️ إعداد إضافي مطلوب مرة واحدة عشان زرار "إيقاف استقبال
+   الطلبات مؤقتًا" وخانة "ملاحظات على الطلب" يشتغلوا:
+
+   alter table public.stats add column if not exists store_open boolean default true;
+   alter table public.orders add column if not exists notes text;
+
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   ============================================================ */
+
+/* ============================================================
+   ⚠️ إعداد إضافي مطلوب مرة واحدة عشان "أرشيف الطلبات" يشتغل —
+   الفكرة: الطلبات بتتمسح عادي زي ما هي (كل 12 ساعة / يدوي) عشان
+   الداتا بيز تفضل خفيفة، لكن قبل ما تتمسح بنسخة خفيفة منها هنا،
+   فتفضل موجودة للأبد في تصدير الإكسل الشهري حتى لو اتمسحت من
+   جدول orders الأساسي. الجدول ده بياخد مساحة قليلة جدًا (بيانات
+   ملخّصة بس، بدون أي تكرار زيادة عن اللزوم):
+
+   create table if not exists public.archived_orders (
+     id text primary key,
+     created_at timestamptz,
+     customer_name text,
+     phone text,
+     fulfillment text,
+     address text,
+     notes text,
+     items jsonb,
+     total numeric,
+     discount numeric default 0,
+     coupon_code text,
+     status text,
+     rating int
+   );
+   alter table public.archived_orders enable row level security;
+   create policy "anon read archived_orders" on public.archived_orders for select to anon using (true);
+   create policy "anon write archived_orders" on public.archived_orders for insert to anon with check (true);
+   create policy "anon upsert archived_orders" on public.archived_orders for update to anon using (true) with check (true);
+
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   ============================================================ */
 let supabaseClient = null;
 function getSupabase() {
   if (supabaseClient) return supabaseClient;
@@ -433,8 +476,9 @@ const BRANCH = {
 };
 
 const FALLBACK_IMG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' fill='%23f3e6cf'/><text x='50%' y='50%' font-size='60' text-anchor='middle' dominant-baseline='middle'>🌰</text></svg>";
-const STATUS_LIST = ['قيد التحضير', 'جاهز', 'تم التسليم'];
-const STATUS_KEY = { 'قيد التحضير': 'st-prep', 'جاهز': 'st-ready', 'تم التسليم': 'st-done' };
+const STATUS_LIST_PICKUP = ['قيد التحضير', 'جاهز', 'تم التسليم'];
+const STATUS_LIST_DELIVERY = ['قيد التحضير', 'جاهز', 'في الطريق إليك', 'تم التسليم'];
+const STATUS_KEY = { 'قيد التحضير': 'st-prep', 'جاهز': 'st-ready', 'في الطريق إليك': 'st-onway', 'تم التسليم': 'st-done' };
 const CAT_LABELS = { mekassarat: 'مكسرات', lab: 'لب وتسالي', mojaffafat: 'فواكه مجففة', choco: 'شوكولاتة وسناكس', mashroobat: 'مشروبات وقهوة', halawiyat: 'حلويات بلدي' };
 
 let PRODUCTS = [];
@@ -491,6 +535,48 @@ async function loadLifetimeStats() {
 }
 
 /* ============================================================
+   إيقاف/تشغيل استقبال الطلبات مؤقتًا
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   ============================================================ */
+function renderStoreToggle(isOpen) {
+  const btn = document.getElementById('storeToggleBtn');
+  if (isOpen) {
+    btn.textContent = '⏸️ إيقاف استقبال الطلبات';
+    btn.style.background = 'rgba(255,255,255,.2)';
+  } else {
+    btn.textContent = '▶️ تشغيل استقبال الطلبات';
+    btn.style.background = '#c0392b';
+  }
+}
+
+async function loadStoreOpenState() {
+  try {
+    const { data, error } = await getSupabase().from('stats').select('store_open').eq('id', 'global').maybeSingle();
+    if (error || !data) { renderStoreToggle(true); return; }
+    renderStoreToggle(data.store_open !== false);
+  } catch (e) {
+    console.error('❌ خطأ في تحميل حالة المحل:', e);
+    renderStoreToggle(true);
+  }
+}
+
+document.getElementById('storeToggleBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('storeToggleBtn');
+  const currentlyOpen = btn.textContent.includes('إيقاف'); // لو الزرار بيقول "إيقاف" يبقى المحل شغال دلوقتي
+  const newState = !currentlyOpen;
+  const label = newState ? 'إيقاف' : 'تشغيل';
+  if (!confirm(newState ? 'متأكد إنك عايز توقف استقبال الطلبات مؤقتًا؟ العملاء مش هيقدروا يطلبوا لحد ما ترجع تشغّلها.' : 'متأكد إنك عايز ترجع تستقبل الطلبات تاني؟')) return;
+  try {
+    const { error } = await getSupabase().from('stats').update({ store_open: newState }).eq('id', 'global');
+    if (error) throw error;
+    renderStoreToggle(newState);
+    showToast(newState ? '✅ الموقع بيستقبل طلبات تاني' : '⏸️ اتوقف استقبال الطلبات مؤقتًا');
+  } catch (e) {
+    showToast('❌ حصل خطأ: ' + (e.message || 'تأكد إنك شغّلت أوامر الـ SQL'), true);
+  }
+});
+
+/* ============================================================
    SUPABASE: ORDERS
    ============================================================ */
 async function loadOrdersFromSupabase() {
@@ -520,6 +606,22 @@ async function updateOrderStatus(orderId, status) {
 async function cleanupOldOrders() {
   try {
     const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+
+    try {
+      const { data: doomed } = await getSupabase().from('orders').select('*').lt('created_at', cutoff);
+      if (doomed && doomed.length > 0) {
+        const archiveRows = doomed.map(o => ({
+          id: o.id, created_at: o.created_at, customer_name: o.customer_name, phone: o.phone,
+          fulfillment: o.fulfillment, address: o.address, notes: o.notes || '', items: o.items,
+          total: o.total, discount: o.discount || 0, coupon_code: o.coupon_code || null,
+          status: o.status, rating: o.rating || null
+        }));
+        await getSupabase().from('archived_orders').upsert(archiveRows, { onConflict: 'id' });
+      }
+    } catch (archiveErr) {
+      console.warn('⚠️ فشل أرشفة الطلبات قبل المسح:', archiveErr && archiveErr.message ? archiveErr.message : archiveErr);
+    }
+
     const { error } = await getSupabase().from('orders').delete().lt('created_at', cutoff);
     if (error) {
       console.error('❌ خطأ في مسح الطلبات القديمة:', error.message || error);
@@ -637,6 +739,7 @@ async function showDashboard() {
   await loadProductsFromSupabase();
   await loadOrders();
   loadLifetimeStats();
+  loadStoreOpenState();
   renderAdminProducts();
   renderBlacklist();
   renderCoupons();
@@ -704,7 +807,19 @@ document.getElementById('exportMonthBtn').addEventListener('click', async () => 
   const btn = document.getElementById('exportMonthBtn');
   btn.textContent = 'جاري التجهيز...';
   try {
-    const orders = await loadOrdersFromSupabase();
+    const liveOrders = await loadOrdersFromSupabase();
+    let archived = [];
+    try {
+      const { data } = await getSupabase().from('archived_orders').select('*');
+      archived = data || [];
+    } catch (archErr) {
+      console.warn('⚠️ مقدرناش نجيب الأرشيف (لسه مش متظبط SQL؟):', archErr && archErr.message ? archErr.message : archErr);
+    }
+    // ندمج الاتنين ونشيل أي تكرار بالـ id (لو أوردر موجود في المكانين)
+    const merged = new Map();
+    [...archived, ...liveOrders].forEach(o => merged.set(o.id, o));
+    const orders = Array.from(merged.values());
+
     const filtered = orders.filter(o => {
       const d = new Date(o.created_at);
       return d.getFullYear() === year && (d.getMonth() + 1) === month;
@@ -716,13 +831,14 @@ document.getElementById('exportMonthBtn').addEventListener('click', async () => 
       return;
     }
 
-    const headers = ['التاريخ', 'الاسم', 'الهاتف', 'نوع الاستلام', 'العنوان', 'المنتجات', 'الإجمالي', 'الخصم', 'الكوبون', 'الحالة', 'التقييم'];
+    const headers = ['التاريخ', 'الاسم', 'الهاتف', 'نوع الاستلام', 'العنوان', 'ملاحظات', 'المنتجات', 'الإجمالي', 'الخصم', 'الكوبون', 'الحالة', 'التقييم'];
     const rows = filtered.map(o => [
       new Date(o.created_at).toLocaleString('ar-EG'),
       o.customer_name || '',
       o.phone || '',
       o.fulfillment === 'pickup' ? 'استلام' : 'توصيل',
       o.address || '',
+      o.notes || '',
       o.items ? o.items.map(it => `${it.name} (${it.unitLabel} × ${it.qty})`).join(' | ') : '',
       o.total || 0,
       o.discount || 0,
@@ -825,6 +941,7 @@ async function loadOrders() {
     const mapsMatch = rawAddress.match(/https:\/\/www\.google\.com\/maps\?q=[^\s]+/);
     const addressText = rawAddress.replace(/📍 موقعي على الخريطة:\s*https:\/\/www\.google\.com\/maps\?q=[^\s]+/, '').trim();
     const mapsLinkHtml = mapsMatch ? ` <a href="${mapsMatch[0]}" target="_blank" style="background:var(--green-wa);color:#fff;padding:3px 10px;border-radius:10px;font-size:11.5px;font-weight:800;">📍 افتح الموقع على الخريطة</a>` : '';
+    const notesHtml = o.notes ? `<div style="font-size:12.5px;color:var(--pink-dark);font-weight:800;margin-top:6px;background:#fff3f7;padding:6px 10px;border-radius:8px;">📝 ${o.notes}</div>` : '';
     return `
     <div class="order-row">
       <div class="or-top">
@@ -832,13 +949,14 @@ async function loadOrders() {
         <span class="badge ${o.fulfillment}">${o.fulfillment === 'pickup' ? 'استلام' : 'توصيل'}</span>
       </div>
       <div class="or-items">${o.items ? o.items.map(it => `${it.name} (${it.unitLabel} × ${it.qty})`).join('، ') : '-'}</div>
+      ${notesHtml}
       <div class="or-meta">
         <span>📍 ${o.fulfillment === 'pickup' ? 'الجلاء - طنطا' : (addressText || '-')}${mapsLinkHtml} &nbsp;|&nbsp; 💰 ${o.total} جنيه${discountHtml} &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
       </div>
       ${ratingHtml}
       <div class="or-actions">
         <select class="status-select ${statusClass}" data-order="${o.id}">
-          ${STATUS_LIST.map(s => `<option value="${s}" ${s === status ? 'selected' : ''}>${s}</option>`).join('')}
+          ${(o.fulfillment === 'delivery' ? STATUS_LIST_DELIVERY : STATUS_LIST_PICKUP).map(s => `<option value="${s}" ${s === status ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
         <button class="mini-btn" data-phone="${o.phone}">حظر العميل</button>
       </div>
