@@ -319,12 +319,22 @@
     </div>
 
     <div class="cleanup-box" style="border:2px solid var(--red);">
-      <h4>⚠️ منطقة الخطر — مسح كل الطلبات والفلوس المسجلة</h4>
+      <h4>⚠️ منطقة الخطر — امسح كل حاجة نهائيًا (ريست كامل)</h4>
       <p>
-        الزرار ده بيمسح <b>كل</b> الطلبات المسجلة من غير استثناء (مش بس القديمة)، وبالتالي هيصفّر كل الأرقام
-        (إجمالي الطلبات، طلبات اليوم، إجمالي المبيعات) وكأنك بتبدأ من الصفر. الحذف ده نهائي ومفيش رجوع فيه.
+        الزرار ده بيمسح <b>كل حاجة بدون استثناء</b>: كل الطلبات، أرشيف الإكسل بالكامل، وبيرجّع الإحصائيات
+        الدائمة (إجمالي الطلبات والمبيعات) صفر — بالظبط زي أول يوم فتحت فيه الموقع. مفيد قبل ما الشغل الحقيقي يبدأ
+        عشان تشيل أي بيانات تجربة. الحذف ده نهائي 100% ومفيش أي رجوع فيه خالص.
       </p>
-      <button class="cleanup-btn" id="wipeAllOrdersBtn">امسح كل الطلبات والفلوس نهائيًا 🗑️</button>
+      <button class="cleanup-btn" id="wipeAllOrdersBtn">امسح كل حاجة نهائيًا (طلبات + أرشيف + إحصائيات) 🗑️</button>
+    </div>
+
+    <div class="cleanup-box" style="border:2px solid var(--gold);">
+      <h4>🔄 تصفير الإحصائيات الدائمة (🔒)</h4>
+      <p>
+        الأرقام المكتوب عليها "ثابتة للأبد" فوق الصفحة (إجمالي الطلبات وإجمالي المبيعات من الأول) بتفضل زي ما هي
+        حتى بعد أي مسح — لغاية ما تدوس الزرار ده بنفسك. لو عايز تبدأ العد من الصفر تاني، دوس هنا.
+      </p>
+      <button class="cleanup-btn" id="resetLifetimeStatsBtn" style="background:var(--gold);color:var(--choc);">تصفير الإحصائيات الدائمة 🔄</button>
     </div>
 
     <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
@@ -886,22 +896,54 @@ document.getElementById('manualCleanupBtn').addEventListener('click', async () =
    Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
    ============================================================================ */
 document.getElementById('wipeAllOrdersBtn').addEventListener('click', async () => {
-  const confirm1 = confirm('متأكد إنك عايز تمسح كل الطلبات والفلوس المسجلة نهائيًا؟ الحذف مش هيترجع تاني.');
+  const confirm1 = confirm('متأكد إنك عايز تمسح كل حاجة نهائيًا (الطلبات + أرشيف الإكسل + الإحصائيات الدائمة)؟ الحذف مش هيترجع تاني.');
   if (!confirm1) return;
-  const typed = prompt('اكتب كلمة "امسح" بالظبط عشان تأكد إنك فاهم إن ده حذف نهائي:');
+  const typed = prompt('اكتب كلمة "امسح" بالظبط عشان تأكد إنك فاهم إن ده حذف نهائي لكل حاجة:');
   if (typed !== 'امسح') { showToast('اتلغى، لازم تكتب "امسح" بالظبط'); return; }
 
   const btn = document.getElementById('wipeAllOrdersBtn');
-  btn.textContent = 'جاري المسح...';
+  btn.textContent = 'جاري المسح الكامل...';
   try {
-    const { error } = await getSupabase().from('orders').delete().neq('id', '___never_matches___');
-    if (error) throw error;
-    showToast('✅ اتمسحت كل الطلبات والفلوس، الأرقام رجعت صفر');
+    const { error: err1 } = await getSupabase().from('orders').delete().neq('id', '___never_matches___');
+    if (err1) throw err1;
+
+    try {
+      await getSupabase().from('archived_orders').delete().neq('id', '___never_matches___');
+    } catch (archErr) {
+      console.warn('⚠️ مقدرناش نمسح الأرشيف (لسه مش متظبط SQL؟):', archErr && archErr.message ? archErr.message : archErr);
+    }
+
+    try {
+      await getSupabase().from('stats').update({ total_orders: 0, total_revenue: 0 }).eq('id', 'global');
+    } catch (statsErr) {
+      console.warn('⚠️ مقدرناش نصفّر الإحصائيات الدائمة:', statsErr && statsErr.message ? statsErr.message : statsErr);
+    }
+
+    showToast('✅ اتمسح كل حاجة: الطلبات، الأرشيف، والإحصائيات كلها صفر دلوقتي');
     loadOrders();
+    loadLifetimeStats();
   } catch (e) {
     showToast('❌ فشل المسح: ' + (e.message || 'حصل خطأ غير متوقع'), true);
   } finally {
-    btn.textContent = 'امسح كل الطلبات والفلوس نهائيًا 🗑️';
+    btn.textContent = 'امسح كل حاجة نهائيًا (طلبات + أرشيف + إحصائيات) 🗑️';
+  }
+});
+
+document.getElementById('resetLifetimeStatsBtn').addEventListener('click', async () => {
+  const confirm1 = confirm('متأكد إنك عايز ترجع "إجمالي الطلبات" و"إجمالي المبيعات" الدائمين صفر تاني؟');
+  if (!confirm1) return;
+
+  const btn = document.getElementById('resetLifetimeStatsBtn');
+  btn.textContent = 'جاري التصفير...';
+  try {
+    const { error } = await getSupabase().from('stats').update({ total_orders: 0, total_revenue: 0 }).eq('id', 'global');
+    if (error) throw error;
+    showToast('✅ رجعت الإحصائيات الدائمة صفر');
+    loadLifetimeStats();
+  } catch (e) {
+    showToast('❌ حصل خطأ: ' + (e.message || 'تأكد إنك شغّلت أوامر الـ SQL'), true);
+  } finally {
+    btn.textContent = 'تصفير الإحصائيات الدائمة 🔄';
   }
 });
 
