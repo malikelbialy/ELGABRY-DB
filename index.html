@@ -302,6 +302,15 @@
       <button class="cleanup-btn" id="manualCleanupBtn">امسح الطلبات الأقدم من 12 ساعة الآن</button>
     </div>
 
+    <div class="cleanup-box" style="border:2px solid var(--red);">
+      <h4>⚠️ منطقة الخطر — مسح كل الطلبات والفلوس المسجلة</h4>
+      <p>
+        الزرار ده بيمسح <b>كل</b> الطلبات المسجلة من غير استثناء (مش بس القديمة)، وبالتالي هيصفّر كل الأرقام
+        (إجمالي الطلبات، طلبات اليوم، إجمالي المبيعات) وكأنك بتبدأ من الصفر. الحذف ده نهائي ومفيش رجوع فيه.
+      </p>
+      <button class="cleanup-btn" id="wipeAllOrdersBtn">امسح كل الطلبات والفلوس نهائيًا 🗑️</button>
+    </div>
+
     <div style="background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
       <h4>📋 معلومات الفرع</h4>
       <p style="color:#8a7563;margin-top:8px;"><strong>اسم المستخدم:</strong> <span id="settingsUsername">ELGABRY1</span></p>
@@ -602,6 +611,30 @@ document.getElementById('manualCleanupBtn').addEventListener('click', async () =
     loadOrders();
   } else {
     showToast('❌ فشل المسح: ' + result.message + ' — تأكد إنك شغّلت أوامر الـ SQL', true);
+  }
+});
+
+/* ===================== WIPE ALL ORDERS (danger zone) =====================
+   بيمسح كل الطلبات نهائيًا ويصفّر كل الأرقام - حذف لا رجعة فيه
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   ============================================================================ */
+document.getElementById('wipeAllOrdersBtn').addEventListener('click', async () => {
+  const confirm1 = confirm('متأكد إنك عايز تمسح كل الطلبات والفلوس المسجلة نهائيًا؟ الحذف مش هيترجع تاني.');
+  if (!confirm1) return;
+  const typed = prompt('اكتب كلمة "امسح" بالظبط عشان تأكد إنك فاهم إن ده حذف نهائي:');
+  if (typed !== 'امسح') { showToast('اتلغى، لازم تكتب "امسح" بالظبط'); return; }
+
+  const btn = document.getElementById('wipeAllOrdersBtn');
+  btn.textContent = 'جاري المسح...';
+  try {
+    const { error } = await getSupabase().from('orders').delete().neq('id', '___never_matches___');
+    if (error) throw error;
+    showToast('✅ اتمسحت كل الطلبات والفلوس، الأرقام رجعت صفر');
+    loadOrders();
+  } catch (e) {
+    showToast('❌ فشل المسح: ' + (e.message || 'حصل خطأ غير متوقع'), true);
+  } finally {
+    btn.textContent = 'امسح كل الطلبات والفلوس نهائيًا 🗑️';
   }
 });
 
