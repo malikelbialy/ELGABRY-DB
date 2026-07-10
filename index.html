@@ -452,6 +452,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
      customer_name text,
      phone text,
      fulfillment text,
+     branch text,
      address text,
      notes text,
      items jsonb,
@@ -461,6 +462,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
      status text,
      rating int
    );
+   alter table public.archived_orders add column if not exists branch text;
    alter table public.archived_orders enable row level security;
    create policy "anon read archived_orders" on public.archived_orders for select to anon using (true);
    create policy "anon write archived_orders" on public.archived_orders for insert to anon with check (true);
@@ -622,7 +624,7 @@ async function cleanupOldOrders() {
       if (doomed && doomed.length > 0) {
         const archiveRows = doomed.map(o => ({
           id: o.id, created_at: o.created_at, customer_name: o.customer_name, phone: o.phone,
-          fulfillment: o.fulfillment, address: o.address, notes: o.notes || '', items: o.items,
+          fulfillment: o.fulfillment, branch: o.branch || '', address: o.address, notes: o.notes || '', items: o.items,
           total: o.total, discount: o.discount || 0, coupon_code: o.coupon_code || null,
           status: o.status, rating: o.rating || null
         }));
@@ -841,9 +843,10 @@ document.getElementById('exportMonthBtn').addEventListener('click', async () => 
       return;
     }
 
-    const headers = ['التاريخ', 'الاسم', 'الهاتف', 'نوع الاستلام', 'العنوان', 'ملاحظات', 'المنتجات', 'الإجمالي', 'الخصم', 'الكوبون', 'الحالة', 'التقييم'];
+    const headers = ['التاريخ', 'الفرع', 'الاسم', 'الهاتف', 'نوع الاستلام', 'العنوان', 'ملاحظات', 'المنتجات', 'الإجمالي', 'الخصم', 'الكوبون', 'الحالة', 'التقييم'];
     const rows = filtered.map(o => [
       new Date(o.created_at).toLocaleString('ar-EG'),
+      o.branch || 'طنطا – الجلاء',
       o.customer_name || '',
       o.phone || '',
       o.fulfillment === 'pickup' ? 'استلام' : 'توصيل',
@@ -981,7 +984,7 @@ async function loadOrders() {
     const discountHtml = o.discount > 0 ? ` (خصم ${o.discount} ج${o.coupon_code ? ' - ' + o.coupon_code : ''})` : '';
     const rawAddress = o.address || '';
     const mapsMatch = rawAddress.match(/https:\/\/www\.google\.com\/maps\?q=[^\s]+/);
-    const addressText = rawAddress.replace(/📍 موقعي على الخريطة:\s*https:\/\/www\.google\.com\/maps\?q=[^\s]+/, '').trim();
+    const addressText = rawAddress.replace(/📍[^\n]*https:\/\/www\.google\.com\/maps\?q=[^\s]+\n?/, '').replace(/🏷️\s*أقرب علامة:\s*/, '').trim();
     const mapsLinkHtml = mapsMatch ? ` <a href="${mapsMatch[0]}" target="_blank" style="background:var(--green-wa);color:#fff;padding:3px 10px;border-radius:10px;font-size:11.5px;font-weight:800;">📍 افتح الموقع على الخريطة</a>` : '';
     const notesHtml = o.notes ? `<div style="font-size:12.5px;color:var(--pink-dark);font-weight:800;margin-top:6px;background:#fff3f7;padding:6px 10px;border-radius:8px;">📝 ${o.notes}</div>` : '';
     return `
@@ -989,11 +992,12 @@ async function loadOrders() {
       <div class="or-top">
         <b>${o.customer_name || 'عميل'} — ${o.phone || '-'}</b>
         <span class="badge ${o.fulfillment}">${o.fulfillment === 'pickup' ? 'استلام' : 'توصيل'}</span>
+        <span class="badge" style="background:#f1e3c8;color:var(--choc);">🏪 ${(o.branch || 'الجلاء').split('–')[0].trim()}</span>
       </div>
       <div class="or-items">${o.items ? o.items.map(it => `${it.name} (${it.unitLabel} × ${it.qty})`).join('، ') : '-'}</div>
       ${notesHtml}
       <div class="or-meta">
-        <span>📍 ${o.fulfillment === 'pickup' ? 'الجلاء - طنطا' : (addressText || '-')}${mapsLinkHtml} &nbsp;|&nbsp; 💰 ${o.total} جنيه${discountHtml} &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
+        <span>📍 ${o.fulfillment === 'pickup' ? (o.branch || 'الجلاء - طنطا') : (addressText || '-')}${mapsLinkHtml} &nbsp;|&nbsp; 💰 ${o.total} جنيه${discountHtml} &nbsp;|&nbsp; 🕒 ${new Date(o.created_at).toLocaleString('ar-EG')}</span>
       </div>
       ${ratingHtml}
       <div class="or-actions">
