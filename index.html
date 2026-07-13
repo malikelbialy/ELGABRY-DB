@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة تحكم - محمصة الجابري</title>
-<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
+<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 */
+/* Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744 */
   :root{
     --pink:#d6336c;
     --pink-dark:#a61e4d;
@@ -167,7 +167,7 @@
 </style>
 </head>
 <body>
-<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
+<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744 -->
 
 <div class="site-loader" id="siteLoader"><div class="ld-spin"></div><span>بنجهزلك اللوحة...</span></div>
 <div class="diag-banner" id="diagBanner"></div>
@@ -193,7 +193,7 @@
 </div>
 
 <!-- ===== DASHBOARD PAGE ===== -->
-<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
+<!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744 -->
 <div class="dashboard-page" id="dashboardPage">
   <div class="dashboard-header">
     <h2>📊 لوحة تحكم <span id="dashBranchName">الفرع</span></h2>
@@ -229,7 +229,7 @@
   </div>
 
   <div class="admin-panel" id="productsPanel">
-    <!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286 -->
+    <!-- Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744 -->
     <div class="admin-product-form">
       <h4>➕ إضافة منتج جديد</h4>
       <div class="form-grid">
@@ -341,7 +341,7 @@
       <h4>📋 معلومات الفرع</h4>
       <p style="color:#8a7563;margin-top:8px;"><strong>اسم المستخدم:</strong> <span id="settingsUsername">ELGABRY1</span></p>
       <p style="color:#8a7563;"><strong>الفرع:</strong> <span id="settingsBranch">طنطا – الجلاء – الموقف القديم</span></p>
-      <p style="color:#cdb89c;margin-top:14px;font-size:11.5px;">Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286</p>
+      <p style="color:#cdb89c;margin-top:14px;font-size:11.5px;">Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744</p>
     </div>
   </div>
 </div>
@@ -382,7 +382,7 @@
 
 <script>
 /* ============================================================
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    SUPABASE CONFIG (نفس بيانات موقع الطلب)
    ============================================================ */
 const SUPABASE_URL = 'https://nqfnonkhpjkpwwavaqxh.supabase.co';
@@ -425,7 +425,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
    الرقم فورًا وقت ما بيتسجل، ومفيش أي زرار مسح (لا اليدوي ولا
    التلقائي كل 12 ساعة ولا "امسح كل الطلبات") بيقدر يأثر عليه
    لأنه في جدول تاني منفصل تمامًا عن جدول orders.
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ============================================================ */
 
 /* ============================================================
@@ -435,7 +435,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
    alter table public.stats add column if not exists store_open boolean default true;
    alter table public.orders add column if not exists notes text;
 
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ============================================================ */
 
 /* ============================================================
@@ -468,7 +468,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_7eFnPZo2EOti7XFOmy_xMg__oa0ZJWD';
    create policy "anon write archived_orders" on public.archived_orders for insert to anon with check (true);
    create policy "anon upsert archived_orders" on public.archived_orders for update to anon using (true) with check (true);
 
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ============================================================ */
 let supabaseClient = null;
 function getSupabase() {
@@ -518,7 +518,7 @@ function saveBranchPassword() {
 
 /* ============================================================
    SUPABASE: PRODUCTS
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ============================================================ */
 async function loadProductsFromSupabase() {
   try {
@@ -548,7 +548,7 @@ async function loadLifetimeStats() {
 
 /* ============================================================
    إيقاف/تشغيل استقبال الطلبات مؤقتًا
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ============================================================ */
 function renderStoreToggle(isOpen) {
   const btn = document.getElementById('storeToggleBtn');
@@ -792,7 +792,7 @@ document.getElementById('changePassBtn').addEventListener('click', () => {
 /* ===================== MONTHLY EXCEL EXPORT =====================
    بيولّد ملف CSV (بيفتح في إكسل عادي) لطلبات الشهر المختار، بدون أي
    مكتبة خارجية أو اتصال بالنت - عشان يفضل شغال حتى لو النت وقع
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ==================================================================== */
 (function initExportMonthInput() {
   const input = document.getElementById('exportMonthInput');
@@ -896,7 +896,7 @@ document.getElementById('manualCleanupBtn').addEventListener('click', async () =
 
 /* ===================== WIPE ALL ORDERS (danger zone) =====================
    بيمسح كل الطلبات نهائيًا ويصفّر كل الأرقام - حذف لا رجعة فيه
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ============================================================================ */
 document.getElementById('wipeAllOrdersBtn').addEventListener('click', async () => {
   const confirm1 = confirm('متأكد إنك عايز تمسح كل حاجة نهائيًا (الطلبات + أرشيف الإكسل + الإحصائيات الدائمة)؟ الحذف مش هيترجع تاني.');
@@ -1303,7 +1303,7 @@ function showToast(msg, isError) {
 }
 
 /* ===================== INIT =====================
-   Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286
+   Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744
    ================================================== */
 (async function init() {
   try {
@@ -1336,7 +1336,7 @@ function showToast(msg, isError) {
 
   console.log('📊 لوحة تحكم محمصة الجابري - فرع الجلاء');
   console.log('🏪 اسم المستخدم: ' + BRANCH.username);
-  console.log('👨‍💻 Built with ❤️ by programmer Malik El-Bialy · 📱 +20 11 25523286');
+  console.log('👨‍💻 Built with ❤️ by programmer Malik El-Bialy · 📱 +966 54 730 8744');
 })();
 </script>
 </body>
